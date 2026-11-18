@@ -107,8 +107,8 @@ export default function Profile() {
       <div className="border border-line bg-surface p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-line-strong bg-surface-subtle text-3xl">
-              {avatar?.icon || '🐶'}
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-line-strong bg-white p-2">
+              <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-text tracking-tight">
@@ -143,7 +143,7 @@ export default function Profile() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 pt-1">
           {AVATAR_OPTIONS.map((opt) => {
             const isSelected = avatar?.id === opt.id
             return (
@@ -153,13 +153,13 @@ export default function Profile() {
                 onClick={() => handleSelectAvatar(opt.id)}
                 className={`press flex flex-col items-center justify-center p-3 border transition-colors ${
                   isSelected
-                    ? 'border-accent-blue bg-blue-50/50 dark:bg-blue-950/20'
+                    ? 'border-accent-blue bg-blue-50/50'
                     : 'border-line-strong bg-surface hover:bg-surface-hover'
                 }`}
               >
-                <span className="text-3xl mb-1.5" role="img" aria-label={opt.label}>
-                  {opt.icon}
-                </span>
+                <div className="h-12 w-12 mb-2 flex items-center justify-center text-text p-1">
+                  <AvatarIcon id={opt.id} className="h-full w-full object-contain" />
+                </div>
                 <span className="text-xs font-bold text-text">{opt.label}</span>
                 {isSelected && (
                   <span className="mt-1 flex items-center gap-0.5 text-[0.65rem] font-bold text-accent-blue uppercase">

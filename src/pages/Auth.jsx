@@ -114,7 +114,7 @@ export default function Auth({ mode = 'login' }) {
       {/* Top Navigation Bar (matching reference layout) */}
       <header className="border-b border-line bg-surface px-6 sm:px-10 h-16 flex items-center justify-between z-20">
         <div className="flex items-center gap-8">
-          <Logo showText={true} imgClassName="h-10 w-auto" />
+          <Logo showText={true} imgClassName="h-9 w-auto" />
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-muted">
             <Link to="/" className="hover:text-text">
               Discussions

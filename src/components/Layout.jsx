@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router'
 import { Plus, Search, LogOut, MessageSquare, Tag, Menu, X } from 'lucide-react'
 import Logo from './Logo.jsx'
+import { AvatarIcon } from './Avatars.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { ALL_CATEGORIES } from '../lib/posts.js'
 
@@ -98,8 +99,8 @@ export default function Layout() {
           }`}
         >
           {/* Logo Area — Big, prominent dog logo pushed slightly to left with wordmark */}
-          <div className="flex min-h-[4.5rem] items-center border-b border-line px-4 py-3 justify-start">
-            <Logo showText={true} imgClassName="h-12 w-auto" />
+          <div className="flex h-16 items-center border-b border-line px-4 justify-start">
+            <Logo showText={true} imgClassName="h-11 w-auto" />
           </div>
 
           {/* Sidebar Action Button */}
@@ -173,8 +174,8 @@ export default function Layout() {
                 className="flex items-center gap-2.5 text-xs group"
                 title="View your profile"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-line-strong bg-surface text-base">
-                  {avatar?.icon || '🐶'}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-line-strong bg-white p-1">
+                  <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="text-muted block text-[0.65rem] font-bold uppercase tracking-wider">
@@ -221,8 +222,8 @@ export default function Layout() {
         {/* RIGHT MAIN AREA */}
         <div className="flex-1 flex flex-col min-w-0 pt-16 md:pt-0">
           {/* Top Header Bar: Search on Left, User Profile / Auth on Top Right */}
-          <header className="border-b border-line bg-surface px-4 sm:px-8 py-3">
-            <div className="flex items-center justify-between gap-4">
+          <header className="h-16 flex items-center border-b border-line bg-surface px-4 sm:px-8">
+            <div className="flex w-full items-center justify-between gap-4">
               {/* Search Bar */}
               <form onSubmit={handleSearchSubmit} role="search" className="flex-1 max-w-md">
                 <div className="flex items-center border border-line-strong bg-surface px-2.5 py-1.5 text-muted focus-within:border-accent-blue">
@@ -247,12 +248,12 @@ export default function Layout() {
                   <div className="flex items-center gap-2">
                     <Link
                       to="/profile"
-                      className="press flex items-center gap-1.5 border border-line-strong bg-surface px-2.5 py-1 text-xs font-bold text-text hover:bg-surface-hover"
+                      className="press flex items-center gap-2 border border-line-strong bg-surface px-2.5 py-1 text-xs font-bold text-text hover:bg-surface-hover"
                       title="View profile and settings"
                     >
-                      <span className="text-sm" role="img" aria-hidden="true">
-                        {avatar?.icon || '🐶'}
-                      </span>
+                      <div className="h-4.5 w-4.5 shrink-0 flex items-center justify-center">
+                        <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
+                      </div>
                       <span className="font-bold text-text" title={username}>
                         @{username || 'reader'}
                       </span>

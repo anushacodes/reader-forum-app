@@ -6,19 +6,20 @@ import { listComments, addComment, deleteComment } from '../lib/comments.js'
 import { useAuth } from '../lib/auth.jsx'
 import { formatTimeAgo } from '../lib/date.js'
 import { getCategoryBadgeClasses } from '../lib/categories.js'
+import { AvatarIcon } from '../components/Avatars.jsx'
 
-const AVATAR_POOL = ['👧', '👦', '🌸', '📚', '🐶', '☕', '🌿', '🦊']
+const AVATAR_IDS = ['dog', 'girl', 'boy', 'flower', 'books', 'coffee', 'cat']
 
-function getCommentAvatar(author, currentUser, currentAvatar) {
+function getCommentAvatarId(author, currentUser, currentAvatar) {
   if (currentUser?.user_metadata?.username === author || currentUser?.username === author) {
-    return currentAvatar?.icon || '🐶'
+    return currentAvatar?.id || 'dog'
   }
-  if (!author) return '📖'
+  if (!author) return 'dog'
   let hash = 0
   for (let i = 0; i < author.length; i++) {
     hash = (hash << 5) - hash + author.charCodeAt(i)
   }
-  return AVATAR_POOL[Math.abs(hash) % AVATAR_POOL.length]
+  return AVATAR_IDS[Math.abs(hash) % AVATAR_IDS.length]
 }
 
 /**
@@ -402,7 +403,9 @@ export default function PostDetail() {
         {isAuthenticated ? (
           <form onSubmit={handleAddComment} className="border border-line bg-surface p-4 sm:p-5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted">
-              <span className="text-base" role="img" aria-hidden="true">{avatar?.icon || '🐶'}</span>
+              <div className="h-5 w-5 shrink-0 flex items-center justify-center">
+                <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
+              </div>
               <span>Start a comment thread as <strong className="text-text">@{username || 'reader'}</strong></span>
             </div>
 
@@ -469,9 +472,9 @@ export default function PostDetail() {
                     {/* Header: Author + Time + Actions */}
                     <div className="flex items-center justify-between text-xs text-muted">
                       <div className="flex items-center gap-2">
-                        <span className="text-base" role="img" aria-label="avatar">
-                          {getCommentAvatar(rootComment.author, user, avatar)}
-                        </span>
+                        <div className="h-6 w-6 shrink-0 flex items-center justify-center border border-line-strong bg-white p-0.5">
+                          <AvatarIcon id={getCommentAvatarId(rootComment.author, user, avatar)} className="h-full w-full object-contain" />
+                        </div>
                         <strong className="text-sm font-bold text-text">
                           @{rootComment.author || 'reader'}
                         </strong>
@@ -576,9 +579,9 @@ export default function PostDetail() {
                             {/* Reply Header */}
                             <div className="flex items-center justify-between text-xs text-muted">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-base" role="img" aria-label="avatar">
-                                  {getCommentAvatar(reply.author, user, avatar)}
-                                </span>
+                                <div className="h-5 w-5 shrink-0 flex items-center justify-center border border-line-strong bg-white p-0.5">
+                                  <AvatarIcon id={getCommentAvatarId(reply.author, user, avatar)} className="h-full w-full object-contain" />
+                                </div>
                                 <strong className="text-sm font-bold text-text">
                                   @{reply.author || 'reader'}
                                 </strong>
