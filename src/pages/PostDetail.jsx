@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, Link } from 'react-router'
 import { ArrowUp, Edit3, Trash2, Loader2, MessageSquare } from 'lucide-react'
 import { getPostById, deletePost, upvotePost } from '../lib/posts.js'
 import { listComments, addComment, deleteComment } from '../lib/comments.js'
@@ -238,7 +238,13 @@ export default function PostDetail() {
               </span>
             )}
             <span className="text-muted">
-              by <strong className="text-text font-bold">@{post.author || 'reader'}</strong>
+              by{' '}
+              <Link
+                to={`/u/${post.author || 'reader'}`}
+                className="text-text font-bold hover:underline hover:text-accent-red transition-colors"
+              >
+                @{post.author || 'reader'}
+              </Link>
             </span>
             <span className="text-muted/60">•</span>
             <time dateTime={post.created_at} className="text-muted">

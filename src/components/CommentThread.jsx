@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { CornerDownRight, Trash2 } from 'lucide-react'
 import { formatTimeAgo } from '../lib/date.js'
 
@@ -68,7 +69,12 @@ export default function CommentThread({
       <div className={`space-y-3 ${nested ? 'py-3' : 'border-b border-line/70 py-5'}`}>
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
           <div className="flex flex-wrap items-center gap-2">
-            <strong className="text-sm font-bold text-text">@{comment.author || 'reader'}</strong>
+            <Link
+              to={`/u/${comment.author || 'reader'}`}
+              className="text-sm font-bold text-text hover:underline hover:text-accent-red transition-colors"
+            >
+              @{comment.author || 'reader'}
+            </Link>
             {nested && (
               <span className="inline-flex items-center gap-1 text-[0.7rem] font-medium text-accent-blue">
                 ↳ in reply to @{comment.replyToAuthor || parentAuthor}

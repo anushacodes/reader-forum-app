@@ -117,13 +117,32 @@ export async function listPosts({
   sort = 'newest',
   page = 1,
   pageSize = 12,
+  authorUsername = '',
 } = {}) {
   if (isSupabaseConfigured && supabase) {
+    let authorId = null
+    if (authorUsername) {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('username', authorUsername.trim())
+        .maybeSingle()
+      if (prof?.id) {
+        authorId = prof.id
+      } else {
+        return { posts: [], totalCount: 0 }
+      }
+    }
+
     let query = supabase
       .from('posts')
       .select('id, title, content, category, image_url, upvotes, created_at, author_id, profiles(username), comments(count)', {
         count: 'exact',
       })
+
+    if (authorId) {
+      query = query.eq('author_id', authorId)
+    }
 
     const cleanSearch = search.trim()
     if (cleanSearch) {
@@ -161,6 +180,11 @@ export async function listPosts({
     // Offline / Demo fallback
     let all = [...getLocalPosts()]
 
+    if (authorUsername) {
+      const target = authorUsername.trim().toLowerCase()
+      all = all.filter((p) => (p.author || '').toLowerCase() === target)
+    }
+
     const cleanSearch = search.trim().toLowerCase()
     if (cleanSearch) {
       all = all.filter((p) => p.title.toLowerCase().includes(cleanSearch))
@@ -181,6 +205,40 @@ export async function listPosts({
     const paginated = all.slice(from, from + pageSize)
 
     return { posts: paginated, totalCount }
+  }
+}
+
+/**
+ * Fetches public user profile information by username.
+ */
+export async function getUserProfile(username) {
+  const cleanUsername = (username || '').trim()
+  if (!cleanUsername) return null
+
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, created_at')
+      .ilike('username', cleanUsername)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching profile:', error)
+      return null
+    }
+    return data || null
+  } else {
+    // Offline / demo fallback
+    const allPosts = getLocalPosts()
+    const userPosts = allPosts.filter(
+      (p) => (p.author || '').toLowerCase() === cleanUsername.toLowerCase()
+    )
+    const firstPost = userPosts[userPosts.length - 1]
+    return {
+      id: firstPost?.author_id || `demo-${cleanUsername}`,
+      username: cleanUsername,
+      created_at: firstPost?.created_at || new Date(Date.now() - 14 * 86400000).toISOString(),
+    }
   }
 }
 

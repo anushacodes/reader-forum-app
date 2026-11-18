@@ -63,6 +63,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="u/:username" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="login" element={<Auth mode="login" key="login" />} />

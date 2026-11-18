@@ -56,7 +56,14 @@ export default function PostCard({ post, onUpvote }) {
               </span>
             )}
             <span className="text-muted text-[0.75rem]">
-              by <strong className="font-semibold text-text">@{post.author || 'reader'}</strong>
+              by{' '}
+              <Link
+                to={`/u/${post.author || 'reader'}`}
+                onClick={(e) => e.stopPropagation()}
+                className="font-semibold text-text hover:underline hover:text-accent-red transition-colors"
+              >
+                @{post.author || 'reader'}
+              </Link>
             </span>
             <span className="text-muted/60">•</span>
             <time dateTime={post.created_at} className="text-muted text-[0.75rem]">
