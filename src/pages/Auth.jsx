@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Shuffle, Loader2, AlertCircle, BookOpen } from 'lucide-react'
 import Logo from '../components/Logo.jsx'
-import { useAuth } from '../lib/auth.jsx'
+import { useAuth } from '../lib/authContext.js'
 import { getSafeNextPath } from '../lib/nav.js'
 import { generateUsername, validateUsername } from '../lib/username.js'
 

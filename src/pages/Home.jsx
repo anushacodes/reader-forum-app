@@ -4,7 +4,7 @@ import { AlertCircle, RefreshCw, X } from 'lucide-react'
 import { listPosts, upvotePost } from '../lib/posts.js'
 import PostCard from '../components/PostCard.jsx'
 import { FeedSkeleton } from '../components/Skeleton.jsx'
-import { useAuth } from '../lib/auth.jsx'
+import { useAuth } from '../lib/authContext.js'
 
 const PAGE_SIZE = 50
 
@@ -18,16 +18,16 @@ export default function Home() {
   const activeSearch = searchParams.get('q') || ''
   const activeCategory = searchParams.get('category') || 'All'
   const sortMode = searchParams.get('sort') || 'newest'
-  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+  const currentPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
 
   // Search input state (debounced)
   const [searchInput, setSearchInput] = useState(activeSearch)
 
-  // Posts state
-  const [posts, setPosts] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const requestKey = JSON.stringify([activeSearch, activeCategory, sortMode, currentPage, retryCount])
+  const [feed, setFeed] = useState({ posts: [], totalCount: 0, error: null, requestKey: null })
+  const { posts, totalCount, error: fetchError } = feed
+  const isLoading = feed.requestKey !== requestKey
 
   // Update URL params helper
   const updateFilters = useCallback(
@@ -74,34 +74,9 @@ export default function Home() {
     setSearchInput(activeSearch)
   }
 
-  // Fetch posts from database
-  const loadPosts = useCallback(() => {
-    setIsLoading(true)
-    setFetchError(null)
-
-    return listPosts({
-      search: activeSearch,
-      category: activeCategory,
-      sort: sortMode,
-      page: currentPage,
-      pageSize: PAGE_SIZE,
-    })
-      .then(({ posts: fetchedPosts, totalCount: count }) => {
-        setPosts(fetchedPosts)
-        setTotalCount(count)
-      })
-      .catch((err) => {
-        console.error('Failed to fetch posts:', err)
-        setFetchError('Could not load discussions. Please try again.')
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [activeSearch, activeCategory, sortMode, currentPage])
-
+  // One loading path handles filter changes and retries.
   useEffect(() => {
     let ignore = false
-
     listPosts({
       search: activeSearch,
       category: activeCategory,
@@ -111,22 +86,22 @@ export default function Home() {
     })
       .then(({ posts: fetchedPosts, totalCount: count }) => {
         if (ignore) return
-        setPosts(fetchedPosts)
-        setTotalCount(count)
+        setFeed({ posts: fetchedPosts, totalCount: count, error: null, requestKey })
       })
       .catch((err) => {
         if (ignore) return
         console.error('Failed to fetch posts:', err)
-        setFetchError('Could not load discussions. Please try again.')
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false)
+        setFeed((previous) => ({
+          ...previous,
+          error: 'Could not load discussions. Please try again.',
+          requestKey,
+        }))
       })
 
     return () => {
       ignore = true
     }
-  }, [activeSearch, activeCategory, sortMode, currentPage])
+  }, [activeSearch, activeCategory, sortMode, currentPage, requestKey])
 
   // Handle upvote from feed
   const handleUpvote = async (postId) => {
@@ -200,7 +175,7 @@ export default function Home() {
             <p className="text-sm font-semibold text-text">{fetchError}</p>
             <button
               type="button"
-              onClick={loadPosts}
+              onClick={() => setRetryCount((count) => count + 1)}
               className="press inline-flex items-center gap-1.5 border border-line-strong bg-surface px-4 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
             >
               <RefreshCw size={14} />

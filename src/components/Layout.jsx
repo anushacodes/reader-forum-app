@@ -3,8 +3,8 @@ import { Link, Outlet, useNavigate, useLocation, useSearchParams } from 'react-r
 import { Plus, Search, LogOut, MessageSquare, Tag, Menu, X } from 'lucide-react'
 import Logo from './Logo.jsx'
 import { AvatarIcon } from './Avatars.jsx'
-import { useAuth } from '../lib/auth.jsx'
-import { ALL_CATEGORIES } from '../lib/posts.js'
+import { useAuth } from '../lib/authContext.js'
+import { ALL_CATEGORIES } from '../lib/categories.js'
 
 export default function Layout() {
   const { username, avatar, isAuthenticated, loading, logout } = useAuth()
@@ -98,9 +98,9 @@ export default function Layout() {
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Logo Area — Big, prominent dog logo pushed slightly to left with wordmark */}
-          <div className="flex h-16 items-center border-b border-line px-4 justify-start">
-            <Logo showText={true} imgClassName="h-11 w-auto" />
+          {/* Logo Area — Centered, prominent branding */}
+          <div className="flex h-20 items-center justify-center border-b border-line px-4">
+            <Logo showText={true} imgClassName="h-12 w-auto" className="w-full justify-center" />
           </div>
 
           {/* Sidebar Action Button */}

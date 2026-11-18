@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { Loader2, AlertCircle, Image as ImageIcon, X } from 'lucide-react'
-import { useAuth } from '../lib/auth.jsx'
-import { CATEGORIES, getPostById, createPost, updatePost } from '../lib/posts.js'
+import { CATEGORIES } from '../lib/categories.js'
+import { useAuth } from '../lib/authContext.js'
+import { getPostById, createPost, updatePost } from '../lib/posts.js'
 
 export default function PostForm({ mode = 'create' }) {
   const isEdit = mode === 'edit'
@@ -189,7 +190,7 @@ export default function PostForm({ mode = 'create' }) {
         {errorMessage && (
           <div
             role="alert"
-            className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-200"
+            className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800"
           >
             <AlertCircle size={15} className="mt-0.5 shrink-0 text-accent-red" aria-hidden="true" />
             <span>{errorMessage}</span>

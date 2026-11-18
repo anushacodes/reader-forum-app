@@ -42,3 +42,12 @@ npm-debug.log*
 .idea/
 .DS_Store
 *.sw?
+
+# Tests (kept out of this repository)
+tests/
+__tests__/
+*.test.*
+*.spec.*
+coverage/
+test-results/
+playwright-report/

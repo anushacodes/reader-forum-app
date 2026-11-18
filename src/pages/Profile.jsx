@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Check, AlertCircle, KeyRound, User, Sparkles, LogOut } from 'lucide-react'
-import { useAuth } from '../lib/auth.jsx'
+import { useAuth } from '../lib/authContext.js'
 import { validateUsername } from '../lib/username.js'
+import { AVATAR_OPTIONS } from '../lib/avatar.js'
 import { AvatarIcon } from '../components/Avatars.jsx'
 
 export default function Profile() {
@@ -14,7 +15,6 @@ export default function Profile() {
     updateUsername,
     updatePassword,
     logout,
-    AVATAR_OPTIONS,
   } = useAuth()
   const navigate = useNavigate()
 

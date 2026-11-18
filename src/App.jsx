@@ -1,6 +1,7 @@
 import { Route, Routes, Navigate, useLocation } from 'react-router'
 import Layout from './components/Layout.jsx'
-import { AuthProvider, useAuth } from './lib/auth.jsx'
+import { AuthProvider } from './lib/auth.jsx'
+import { useAuth } from './lib/authContext.js'
 import Home from './pages/Home.jsx'
 import PostDetail from './pages/PostDetail.jsx'
 import PostForm from './pages/PostForm.jsx'

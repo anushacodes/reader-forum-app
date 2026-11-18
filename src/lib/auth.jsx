@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from './supabase.js'
-import { getUserAvatar, setUserAvatar, AVATAR_OPTIONS } from './avatar.js'
-
-const AuthContext = createContext(null)
+import { getUserAvatar, setUserAvatar } from './avatar.js'
+import { AuthContext } from './authContext.js'
 
 const DEMO_STORAGE_KEY = 'dogear.demo_user'
 const USERNAME_EMAIL_STORAGE_KEY = 'dogear_username_email_map'
@@ -62,7 +61,7 @@ function readDemoUser() {
 }
 
 export function AuthProvider({ children }) {
-  const initialDemo = readDemoUser()
+  const [initialDemo] = useState(readDemoUser)
   const [session, setSession] = useState(() => (initialDemo ? { user: initialDemo } : null))
   const [user, setUser] = useState(() => initialDemo ?? null)
   const [profile, setProfile] = useState(() => (initialDemo ? { id: initialDemo.id, username: initialDemo.username } : null))
@@ -309,7 +308,6 @@ export function AuthProvider({ children }) {
       avatar,
       updateAvatar,
       updateUsername,
-      AVATAR_OPTIONS,
       loading,
       isAuthenticated: Boolean(user),
       isSupabaseConfigured,
@@ -317,21 +315,9 @@ export function AuthProvider({ children }) {
       signup,
       logout,
       updatePassword,
-      refreshProfile: () => (user ? loadProfile(user.id) : Promise.resolve(null)),
     }),
     [session, user, profile, avatar, loading, updateUsername, updateAvatar]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-/**
- * Access the authentication state and actions
- */
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 }

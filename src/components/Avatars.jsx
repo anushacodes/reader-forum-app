@@ -1,3 +1,5 @@
+import { DogSvg } from './Logo.jsx'
+
 /**
  * Handcrafted vector illustrated icons matching the Dogear logo art style:
  * Clean black ink line-art (2.5px stroke), white fill, rounded caps, friendly character expressions.
@@ -5,11 +7,7 @@
 
 export function DogIcon({ className = 'h-full w-full' }) {
   return (
-    <img
-      src="/logo.png"
-      alt="Dogear dog icon"
-      className={`object-contain ${className}`}
-    />
+    <DogSvg className={`object-contain ${className}`} />
   )
 }
 

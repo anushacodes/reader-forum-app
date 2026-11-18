@@ -6,7 +6,7 @@
 
   **A warm, sleek, minimalist book discussion community for readers who love talking about books.**
 
-  [Features](#-features) • [Walkthrough](#-walkthrough) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [License](#-license)
+  [Features](#-features) • [Walkthrough](#-walkthrough) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started)
 
 </div>
 
@@ -20,18 +20,14 @@
 
 ## 🎬 Walkthrough
 
-<div align="center">
-  <img src="walkthrough.gif" width="100%" alt="Dogear Video Walkthrough" />
-</div>
-
-> *Note: Place your recorded walkthrough GIF at `walkthrough.gif` in the repository root.*
+A walkthrough recording is pending. Add `walkthrough.gif` here when it is ready.
 
 ---
 
 ## ✨ Features
 
 ### 📖 Book Discussions & Creation
-- **Structured Posting**: Create discussions with a required title (1–160 characters), optional markdown/plain-text thoughts (up to 10,000 characters), and an optional HTTPS book cover URL.
+- **Structured Posting**: Create discussions with a required title (1–160 characters), optional plain-text thoughts (up to 10,000 characters), and an optional HTTP or HTTPS book cover URL.
 - **Author Permissions**: Authors retain exclusive control to edit or delete their posts, backed by database-level security policies.
 - **Image Fallback**: Graceful error handling for missing or broken external image links.
 
@@ -51,10 +47,10 @@
 - **Visual Thread Tree**: Replies are visually nested directly beneath the parent comment with connector guide lines and an explicit `↳ in reply to @author` badge.
 - **Inline Reply Composer**: Clicking `[ ↳ Reply ]` opens an inline composer directly attached to that comment with clear cancel and post actions.
 - **Distinct Top Composer**: The top-level comment composer is clearly labeled **"Start a comment thread"** to distinguish root comments from nested replies.
-- **Typography & Live Counts**: Comment body text is set to 14–15px (`text-sm sm:text-[15px] leading-relaxed`) for easy reading, with live comment counts displayed on feed cards and detail pages.
+- **Typography & Live Counts**: Comment body text is set to 14–15px (`text-sm sm:text-[15px] leading-relaxed`) for easy reading, with comment counts fetched on feed load and updated after comments are added or deleted on the detail page.
 
 ### 👤 Persistent Authentication & Dual Login
-- **Email OR Username Sign In**: Users can log in using either their email address or their `@username` handle.
+- **Email or Username Sign In**: Email works across devices. Username sign-in uses a username-to-email mapping saved in the current browser, plus the existing demo account mappings; other accounts must use email on a new browser.
 - **Pseudonymous Handles**: Choose a custom handle or auto-generate one on signup (`generateUsername()`).
 - **Database Row-Level Security**: Only authenticated authors can update or delete their content; unauthorized client mutations are rejected directly by PostgreSQL.
 
@@ -67,13 +63,13 @@
   - 📚 **Books**: Cozy stack of books with ribbon bookmark and glasses
   - ☕ **Coffee**: Steaming book-reading ceramic mug
   - 🐱 **Cat**: Companion cat with perked ears and whiskers
-- **Dedicated Profile Page (`/profile`)**: Manage your profile icon, change your password with validation alerts, and update your public username handle.
+- **Dedicated Profile Page (`/profile`)**: Manage your profile icon and change your password. The page also includes a username form; see the database permission limitation below.
 
 ### 🏷️ Categories & Tag Filtering
 - **Color-Coded Flags**: Posts are flagged as **Review**, **Question**, **Recommendation**, or **Opinion**.
 - **Sidebar Navigation**: Left sidebar navigation panel provides one-click browsing across all tags.
 
-### 📐 Anti-AI Editorial Aesthetic
+### 📐 Editorial Design
 - **Zero Rounded Corners**: Strictly enforces `* { border-radius: 0 !important; }` for a sharp, honest, rectilinear design with clean 1px borders.
 - **System Typography**: Clean Apple SF / Inter type stack with high-contrast text and a white background.
 
@@ -91,7 +87,7 @@
                 │                        │
 ┌───────────────▼────────────────────────▼───────────────┐
 │                     Supabase Backend                   │
-│   PostgreSQL 15 • Row-Level Security (RLS) • Auth Hook │
+│   PostgreSQL    • Row-Level Security (RLS) • Auth Hook │
 ├────────────────────────────────────────────────────────┤
 │ • public.profiles  (id, username, created_at)          │
 │ • public.posts     (id, author_id, title, content, ...)│
@@ -115,7 +111,7 @@
      ```
    - This prevents race conditions and ensures client tokens cannot tamper with vote tallies directly.
 3. **Threaded Comment Tree Engine**:
-   - The comment parser in `src/pages/PostDetail.jsx` indexes comments and constructs a hierarchical multi-level thread tree, handling reply IDs and `@author` mentions with tree line connectors.
+   - The parser in `src/lib/commentThreads.js` builds threads from reply IDs and legacy `@author` mentions. `src/components/CommentThread.jsx` renders every reply level using one shared comment layout and reply composer.
 
 ---
 
@@ -152,7 +148,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-anon-key
 ```
 
 ### 3. Database Schema Migration
-Run the SQL migration in `supabase/migrations/0001_schema.sql` inside your Supabase project's **SQL Editor**. This sets up the `profiles`, `posts`, `comments` tables, triggers, RLS policies, and the atomic upvotes RPC.
+For a new Supabase project, run `supabase/migrations/0001_schema.sql` in its **SQL Editor** once. Keep the file as the database setup blueprint; restarting the app does not rerun it. This sets up the `profiles`, `posts`, `comments` tables, triggers, RLS policies, and the atomic upvotes RPC.
 
 ### 4. Run the Development Server
 ```bash
@@ -160,7 +156,7 @@ npm run dev
 ```
 Visit `http://localhost:5173` in your browser.
 
-### 5. Build & Lint
+### 5. Check the App
 ```bash
 npm run lint    # Run oxlint checks
 npm run build   # Production Vite bundle build
@@ -168,6 +164,12 @@ npm run build   # Production Vite bundle build
 
 ---
 
-## 📄 License
+## Data Persistence and Known Limitations
 
-Licensed under the [Apache License, Version 2.0](LICENSE).
+- With `.env.local` configured, accounts, posts, comments, and upvotes are stored in Supabase. Closing the browser, editor, or dev server does not delete them. Unsubmitted form text is held in memory and can be lost on reload.
+- Avatar choices and username-to-email mappings are stored in this browser's local storage, so they do not automatically follow you to another browser or device.
+- Without Supabase credentials, legacy demo posts and sign-in use browser storage. Comments still require Supabase; demo mode is not a complete offline app.
+- The checked-in migration grants read access to profiles, but no profile update policy or grant. Username changes need those database permissions; the current form can show a local change that does not persist in the shared profile table.
+- Replies store their parent reference in the comment body. That reference counts toward the database's 2,000-character limit.
+- Comments are fetched together, with no pagination or realtime subscription. Upvotes allow repeated clicks rather than tracking one vote per user.
+- The walkthrough recording and production deployment are pending.

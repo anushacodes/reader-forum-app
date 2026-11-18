@@ -1,7 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase.js'
-
-export const CATEGORIES = ['Review', 'Question', 'Recommendation', 'Opinion']
-export const ALL_CATEGORIES = ['All', ...CATEGORIES]
+import { CATEGORIES } from './categories.js'
 
 const LOCAL_STORAGE_KEY = 'dogear.demo_posts'
 
@@ -211,23 +209,22 @@ export async function getPostById(id) {
   }
 }
 
-/**
- * Creates a new post.
- */
-export async function createPost({ title, content, category, image_url }, currentAuthor = {}) {
+function getPostPayload({ title, content, category, image_url }) {
   const cleanTitle = (title || '').trim()
   const cleanContent = (content || '').trim() || null
   const cleanCategory = CATEGORIES.includes(category) ? category : 'Opinion'
   const cleanImageUrl = (image_url || '').trim() || null
 
-  if (isSupabaseConfigured && supabase) {
-    const payload = {
-      title: cleanTitle,
-      content: cleanContent,
-      category: cleanCategory,
-      image_url: cleanImageUrl,
-    }
+  return { title: cleanTitle, content: cleanContent, category: cleanCategory, image_url: cleanImageUrl }
+}
 
+/**
+ * Creates a new post.
+ */
+export async function createPost({ title, content, category, image_url }, currentAuthor = {}) {
+  const payload = getPostPayload({ title, content, category, image_url })
+
+  if (isSupabaseConfigured && supabase) {
     const { data, error } = await supabase
       .from('posts')
       .insert(payload)
@@ -239,10 +236,7 @@ export async function createPost({ title, content, category, image_url }, curren
   } else {
     const newPost = {
       id: 'demo-post-' + Date.now(),
-      title: cleanTitle,
-      content: cleanContent,
-      category: cleanCategory,
-      image_url: cleanImageUrl,
+      ...payload,
       upvotes: 0,
       created_at: new Date().toISOString(),
       author: currentAuthor.username || 'Reader',
@@ -258,19 +252,9 @@ export async function createPost({ title, content, category, image_url }, curren
  * Updates an existing post.
  */
 export async function updatePost(id, { title, content, category, image_url }) {
-  const cleanTitle = (title || '').trim()
-  const cleanContent = (content || '').trim() || null
-  const cleanCategory = CATEGORIES.includes(category) ? category : 'Opinion'
-  const cleanImageUrl = (image_url || '').trim() || null
+  const payload = getPostPayload({ title, content, category, image_url })
 
   if (isSupabaseConfigured && supabase) {
-    const payload = {
-      title: cleanTitle,
-      content: cleanContent,
-      category: cleanCategory,
-      image_url: cleanImageUrl,
-    }
-
     const { data, error } = await supabase
       .from('posts')
       .update(payload)
@@ -287,10 +271,7 @@ export async function updatePost(id, { title, content, category, image_url }) {
 
     current[index] = {
       ...current[index],
-      title: cleanTitle,
-      content: cleanContent,
-      category: cleanCategory,
-      image_url: cleanImageUrl,
+      ...payload,
     }
     saveLocalPosts(current)
     return current[index]

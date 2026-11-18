@@ -32,3 +32,17 @@ export function setUserAvatar(userId, avatarId) {
     console.error('Error saving avatar:', err)
   }
 }
+
+/** Use the signed-in reader's selection and stable defaults for other readers. */
+export function getCommentAvatarId(comment, currentUserId, currentAvatar) {
+  if (currentUserId && comment.author_id === currentUserId) {
+    return currentAvatar?.id || DEFAULT_AVATAR_ID
+  }
+  if (!comment.author) return DEFAULT_AVATAR_ID
+
+  let hash = 0
+  for (const char of comment.author) {
+    hash = (hash << 5) - hash + char.charCodeAt(0)
+  }
+  return AVATAR_OPTIONS[Math.abs(hash) % AVATAR_OPTIONS.length].id
+}

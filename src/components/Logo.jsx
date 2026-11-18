@@ -1,5 +1,71 @@
 import { Link } from 'react-router'
 
+export function DogSvg({ className = 'h-11 w-auto' }) {
+  return (
+    <svg
+      viewBox="0 0 234 151"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Dogear logo"
+      className={`shrink-0 ${className}`}
+    >
+      {/* Outer Body & Floppy Ears Fill & Outline */}
+      <path
+        d="M 108.0 3.0 C 111.5 2.8, 122.8 2.7, 128.0 3.0 C 133.2 3.3, 134.2 3.2, 139.0 5.0 C 143.8 6.8, 151.8 12.7, 157.0 14.0 C 162.2 15.3, 166.7 12.8, 170.0 13.0 C 173.3 13.2, 174.3 13.8, 177.0 15.0 C 179.7 16.2, 182.7 17.3, 186.0 20.0 C 189.3 22.7, 194.3 28.0, 197.0 31.0 C 199.7 34.0, 197.5 31.2, 202.0 38.0 C 206.5 44.8, 219.5 64.7, 224.0 72.0 C 228.5 79.3, 227.8 79.2, 229.0 82.0 C 230.2 84.8, 230.7 85.5, 231.0 89.0 C 231.3 92.5, 232.0 98.5, 231.0 103.0 C 230.0 107.5, 227.0 112.8, 225.0 116.0 C 223.0 119.2, 221.3 120.3, 219.0 122.0 C 216.7 123.7, 214.2 125.2, 211.0 126.0 C 207.8 126.8, 203.3 127.3, 200.0 127.0 C 196.7 126.7, 194.2 126.2, 191.0 124.0 C 187.8 121.8, 184.0 113.5, 181.0 114.0 C 178.0 114.5, 176.5 123.0, 173.0 127.0 C 169.5 131.0, 165.0 135.0, 160.0 138.0 C 155.0 141.0, 148.7 143.3, 143.0 145.0 C 137.3 146.7, 133.3 147.7, 126.0 148.0 C 118.7 148.3, 106.5 148.0, 99.0 147.0 C 91.5 146.0, 86.0 144.0, 81.0 142.0 C 76.0 140.0, 72.8 138.0, 69.0 135.0 C 65.2 132.0, 60.8 127.5, 58.0 124.0 C 55.2 120.5, 54.2 114.3, 52.0 114.0 C 49.8 113.7, 47.5 120.0, 45.0 122.0 C 42.5 124.0, 40.2 125.2, 37.0 126.0 C 33.8 126.8, 29.5 127.5, 26.0 127.0 C 22.5 126.5, 19.0 125.0, 16.0 123.0 C 13.0 121.0, 10.0 117.7, 8.0 115.0 C 6.0 112.3, 4.8 111.0, 4.0 107.0 C 3.2 103.0, 1.8 96.7, 3.0 91.0 C 4.2 85.3, 5.3 82.5, 11.0 73.0 C 16.7 63.5, 30.8 42.5, 37.0 34.0 C 43.2 25.5, 44.2 25.2, 48.0 22.0 C 51.8 18.8, 56.8 16.5, 60.0 15.0 C 63.2 13.5, 63.8 13.2, 67.0 13.0 C 70.2 12.8, 74.5 15.2, 79.0 14.0 C 83.5 12.8, 89.3 7.7, 94.0 6.0 C 98.7 4.3, 104.7 4.5, 107.0 4.0 Z"
+        fill="#ffffff"
+        stroke="#2e2b28"
+        strokeWidth="7"
+        strokeLinejoin="round"
+      />
+
+      {/* Brown Ear Patch */}
+      <path
+        d="M 178.0 26.0 C 178.8 26.3, 180.7 26.8, 183.0 29.0 C 185.3 31.2, 186.7 31.5, 192.0 39.0 C 197.3 46.5, 212.0 68.2, 215.0 74.0 C 218.0 79.8, 212.5 74.5, 210.0 74.0 C 207.5 73.5, 203.5 72.5, 200.0 71.0 C 196.5 69.5, 192.2 67.3, 189.0 65.0 C 185.8 62.7, 183.0 59.5, 181.0 57.0 C 179.0 54.5, 178.0 52.7, 177.0 50.0 C 176.0 47.3, 175.2 44.3, 175.0 41.0 C 174.8 37.7, 175.5 32.3, 176.0 30.0 C 176.5 27.7, 177.7 27.7, 178.0 27.0 Z"
+        fill="#9c513f"
+      />
+
+      {/* Left Inner Ear Crease */}
+      <path
+        d="M 71.5 38.0 C 71.0 38.7, 69.7 40.0, 68.5 42.0 C 67.3 44.0, 66.1 45.3, 64.5 50.0 C 62.9 54.7, 60.8 61.3, 59.0 70.0 C 57.3 78.7, 54.8 96.0, 54.0 102.0 C 53.2 108.0, 53.6 104.0, 54.0 106.0 C 54.4 108.0, 56.0 112.7, 56.4 114.0"
+        fill="none"
+        stroke="#2e2b28"
+        strokeWidth="7"
+        strokeLinecap="round"
+      />
+
+      {/* Right Inner Ear Crease */}
+      <path
+        d="M 163.5 38.0 C 164.3 39.3, 166.8 43.3, 168.0 46.0 C 169.3 48.7, 170.0 50.7, 171.0 54.0 C 172.0 57.3, 173.5 63.3, 174.0 66.0 C 174.5 68.7, 173.6 66.7, 174.0 70.0 C 174.4 73.3, 175.3 80.0, 176.5 86.0 C 177.7 92.0, 180.5 101.3, 181.0 106.0 C 181.5 110.7, 179.7 112.7, 179.4 114.0"
+        fill="none"
+        stroke="#2e2b28"
+        strokeWidth="7"
+        strokeLinecap="round"
+      />
+
+      {/* Eyes */}
+      <circle cx="86.5" cy="75.9" r="6.8" fill="#2e2b28" />
+      <circle cx="148.5" cy="75.9" r="6.8" fill="#2e2b28" />
+
+      {/* Nose */}
+      <path
+        d="M 108.5 88.5 C 113.0 87.5, 121.5 87.5, 126.0 88.5 C 127.5 92.0, 122.0 97.0, 117.3 97.5 C 112.5 97.0, 107.0 92.0, 108.5 88.5 Z"
+        fill="#2e2b28"
+      />
+
+      {/* Mouth (Philtrum + W-curve smile) */}
+      <path
+        d="M 117.3 97.5 L 117.3 105.5 M 104.0 110.0 C 107.0 112.0, 114.0 111.5, 117.3 105.5 C 120.5 111.5, 127.5 112.0, 130.5 110.0"
+        fill="none"
+        stroke="#2e2b28"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function Logo({
   className = '',
   showText = true,
@@ -9,19 +75,15 @@ export default function Logo({
     <Link
       to="/"
       aria-label="Dogear home"
-      className={`inline-flex items-center gap-2 no-underline -ml-1 ${className}`}
+      className={`inline-flex items-center justify-center gap-3 no-underline ${className}`}
     >
-      <img
-        src="/logo.png"
-        alt="Dogear"
-        className={`object-contain shrink-0 ${imgClassName}`}
-      />
+      <DogSvg className={imgClassName} />
       {showText && (
         <span
           aria-hidden="true"
-          className="text-xl font-bold tracking-tight text-text leading-none select-none"
+          className="text-2xl sm:text-[1.75rem] font-black tracking-tight text-text leading-none select-none"
         >
-          dogear<span className="text-accent-red font-bold">.</span>
+          dogear<span className="text-accent-red font-black">.</span>
         </span>
       )}
     </Link>
