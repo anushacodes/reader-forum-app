@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router'
-import { Plus, Search, LogOut, MessageSquare, Tag, Menu, X, User, KeyRound } from 'lucide-react'
+import { Plus, Search, LogOut, MessageSquare, Tag, Menu, X } from 'lucide-react'
 import Logo from './Logo.jsx'
-import ChangePasswordModal from './ChangePasswordModal.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { ALL_CATEGORIES } from '../lib/posts.js'
 
 export default function Layout() {
-  const { username, isAuthenticated, loading, logout } = useAuth()
+  const { username, avatar, isAuthenticated, loading, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -16,7 +15,6 @@ export default function Layout() {
   const [headerSearch, setHeaderSearch] = useState(currentQuery)
   const [prevQuery, setPrevQuery] = useState(currentQuery)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
 
   if (prevQuery !== currentQuery) {
     setPrevQuery(currentQuery)
@@ -68,17 +66,11 @@ export default function Layout() {
         Skip to content
       </a>
 
-      {/* Change Password Modal */}
-      <ChangePasswordModal
-        isOpen={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-      />
-
       {/* Responsive Shell: Left Sidebar + Main Content */}
       <div className="flex min-h-screen bg-background">
         {/* Mobile Header Bar (< md screens) */}
         <div className="flex h-16 w-full items-center justify-between border-b border-line bg-surface px-4 md:hidden fixed top-0 z-40">
-          <Logo showText={false} imgClassName="h-11 w-auto" />
+          <Logo showText={true} imgClassName="h-10 w-auto" />
           <div className="flex items-center gap-2">
             {!isAuthenticated && !loading && (
               <Link
@@ -105,9 +97,9 @@ export default function Layout() {
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Logo Area — Big, prominent dog logo with no text */}
-          <div className="flex min-h-[5.5rem] items-center border-b border-line px-5 py-3">
-            <Logo showText={false} imgClassName="h-16 sm:h-18 w-auto" />
+          {/* Logo Area — Big, prominent dog logo pushed slightly to left with wordmark */}
+          <div className="flex min-h-[4.5rem] items-center border-b border-line px-4 py-3 justify-start">
+            <Logo showText={true} imgClassName="h-12 w-auto" />
           </div>
 
           {/* Sidebar Action Button */}
@@ -170,38 +162,29 @@ export default function Layout() {
             </div>
           </nav>
 
-          {/* Sidebar Footer: User / Auth Profile */}
+          {/* Sidebar Footer: Clean minimal user display */}
           <div className="border-t border-line p-4 bg-surface-subtle">
             {loading ? (
               <div className="h-8 animate-pulse bg-line" />
             ) : isAuthenticated ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs">
-                    <span className="text-muted block text-[0.7rem]">Signed in as</span>
-                    <strong className="text-text font-bold" title={username}>
-                      @{username || 'reader'}
-                    </strong>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="press flex items-center gap-1 border border-line-strong bg-surface px-2 py-1 text-[0.7rem] font-semibold text-muted hover:text-accent-red hover:border-accent-red"
-                    title="Sign out"
-                  >
-                    <LogOut size={12} />
-                    <span>Sign out</span>
-                  </button>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 text-xs group"
+                title="View your profile"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-line-strong bg-surface text-base">
+                  {avatar?.icon || '🐶'}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsPasswordModalOpen(true)}
-                  className="press flex w-full items-center justify-center gap-1.5 border border-line-strong bg-surface px-2 py-1 text-[0.7rem] font-semibold text-text hover:bg-surface-hover"
-                >
-                  <KeyRound size={12} />
-                  <span>Change Password</span>
-                </button>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-muted block text-[0.65rem] font-bold uppercase tracking-wider">
+                    Signed in as
+                  </span>
+                  <strong className="text-text font-bold truncate block group-hover:underline" title={username}>
+                    @{username || 'reader'}
+                  </strong>
+                </div>
+              </Link>
             ) : (
               <div className="space-y-2">
                 <p className="text-[0.75rem] text-muted">Join the book community.</p>
@@ -256,26 +239,24 @@ export default function Layout() {
                 </div>
               </form>
 
-              {/* TOP RIGHT CORNER: Profile name / Change Password / Sign out OR Login + Sign up */}
+              {/* TOP RIGHT CORNER: Profile handle + avatar linking to /profile, and sign out */}
               <div className="flex items-center gap-2 text-xs">
                 {loading ? (
                   <div className="h-7 w-20 animate-pulse bg-surface-subtle" />
                 ) : isAuthenticated ? (
                   <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex items-center gap-1.5 border border-line-strong bg-surface px-2.5 py-1 text-xs">
-                      <User size={13} className="text-muted" />
+                    <Link
+                      to="/profile"
+                      className="press flex items-center gap-1.5 border border-line-strong bg-surface px-2.5 py-1 text-xs font-bold text-text hover:bg-surface-hover"
+                      title="View profile and settings"
+                    >
+                      <span className="text-sm" role="img" aria-hidden="true">
+                        {avatar?.icon || '🐶'}
+                      </span>
                       <span className="font-bold text-text" title={username}>
                         @{username || 'reader'}
                       </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsPasswordModalOpen(true)}
-                      className="press border border-line-strong bg-surface px-2.5 py-1 font-semibold text-text hover:bg-surface-hover"
-                      title="Change your password"
-                    >
-                      <span className="hidden sm:inline">Change </span>Password
-                    </button>
+                    </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -306,8 +287,8 @@ export default function Layout() {
             </div>
           </header>
 
-          {/* Main Outlet */}
-          <main id="main" tabIndex={-1} className="flex-1 p-4 sm:p-8 max-w-5xl">
+          {/* Main Page Route View */}
+          <main id="main" className="flex-1 p-4 sm:p-8 max-w-6xl w-full mx-auto" tabIndex={-1}>
             <Outlet />
           </main>
         </div>

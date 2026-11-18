@@ -6,7 +6,7 @@ import PostCard from '../components/PostCard.jsx'
 import { FeedSkeleton } from '../components/Skeleton.jsx'
 import { useAuth } from '../lib/auth.jsx'
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 50
 
 export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -190,10 +190,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Grid Feed Content — Grid option only per user instruction */}
-      <section aria-label="Discussions grid" className="min-h-[40vh]">
+      {/* Main Reddit-Style List Feed Content */}
+      <section aria-label="Discussions list" className="min-h-[40vh]">
         {isLoading ? (
-          <FeedSkeleton count={6} viewMode="visual" />
+          <FeedSkeleton count={6} />
         ) : fetchError ? (
           <div className="flex flex-col items-center justify-center gap-3 py-16 text-center border border-line bg-surface p-6">
             <AlertCircle size={32} className="text-accent-red" aria-hidden="true" />
@@ -228,9 +228,9 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col space-y-3">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} viewMode="visual" onUpvote={handleUpvote} />
+              <PostCard key={post.id} post={post} onUpvote={handleUpvote} />
             ))}
           </div>
         )}

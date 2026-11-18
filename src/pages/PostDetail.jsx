@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { ArrowUp, Edit3, Trash2, Loader2, MessageSquare, CornerDownRight } from 'lucide-react'
 import { getPostById, deletePost, upvotePost } from '../lib/posts.js'
@@ -7,10 +7,87 @@ import { useAuth } from '../lib/auth.jsx'
 import { formatTimeAgo } from '../lib/date.js'
 import { getCategoryBadgeClasses } from '../lib/categories.js'
 
+const AVATAR_POOL = ['👧', '👦', '🌸', '📚', '🐶', '☕', '🌿', '🦊']
+
+function getCommentAvatar(author, currentUser, currentAvatar) {
+  if (currentUser?.user_metadata?.username === author || currentUser?.username === author) {
+    return currentAvatar?.icon || '🐶'
+  }
+  if (!author) return '📖'
+  let hash = 0
+  for (let i = 0; i < author.length; i++) {
+    hash = (hash << 5) - hash + author.charCodeAt(i)
+  }
+  return AVATAR_POOL[Math.abs(hash) % AVATAR_POOL.length]
+}
+
+/**
+ * Builds a threaded tree from comments:
+ * Identifies reply tags like [reply:id] or @Author mentions,
+ * and nests replies directly under their respective parent comments.
+ */
+function buildCommentTree(rawComments) {
+  const commentMap = new Map()
+  const roots = []
+
+  const parsed = rawComments.map((c) => {
+    let replyToId = null
+    let replyToAuthor = null
+    let cleanText = c.body || ''
+
+    // 1. Check for [reply:comment_id] tag
+    const tagMatch = cleanText.match(/^\[reply:([a-zA-Z0-9_-]+)\]\s*(.*)$/s)
+    if (tagMatch) {
+      replyToId = tagMatch[1]
+      cleanText = tagMatch[2]
+    }
+
+    // 2. Check for @username mention
+    const mentionMatch = cleanText.match(/^@([A-Za-z0-9_]+)\s*(.*)$/s)
+    if (mentionMatch) {
+      replyToAuthor = mentionMatch[1]
+      cleanText = mentionMatch[2]
+    }
+
+    const item = {
+      ...c,
+      cleanText: cleanText.trim(),
+      replyToId,
+      replyToAuthor,
+      replies: [],
+    }
+    commentMap.set(c.id, item)
+    return item
+  })
+
+  for (const item of parsed) {
+    let parent = null
+    if (item.replyToId && commentMap.has(item.replyToId)) {
+      parent = commentMap.get(item.replyToId)
+    } else if (item.replyToAuthor) {
+      // Find earlier comment by that author
+      for (let i = parsed.indexOf(item) - 1; i >= 0; i--) {
+        if (parsed[i].author?.toLowerCase() === item.replyToAuthor.toLowerCase()) {
+          parent = parsed[i]
+          break
+        }
+      }
+    }
+
+    if (parent && parent.id !== item.id) {
+      parent.replies.push(item)
+    } else {
+      roots.push(item)
+    }
+  }
+
+  return roots
+}
+
 export default function PostDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
+  const { user, username, avatar, isAuthenticated } = useAuth()
 
   // Post states
   const [post, setPost] = useState(null)
@@ -28,8 +105,8 @@ export default function PostDetail() {
   const [commentError, setCommentError] = useState('')
   const [deletingCommentId, setDeletingCommentId] = useState(null)
 
-  // Threaded reply state
-  const [replyingToCommentId, setReplyingToCommentId] = useState(null)
+  // Threaded reply state: target can be any comment
+  const [replyTarget, setReplyTarget] = useState(null) // { id, author }
   const [replyText, setReplyText] = useState('')
   const [isSubmittingReply, setIsSubmittingReply] = useState(false)
   const [replyError, setReplyError] = useState('')
@@ -140,13 +217,13 @@ export default function PostDetail() {
       navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`)
       return
     }
-    setReplyingToCommentId(comment.id)
-    setReplyText(`@${comment.author} `)
+    setReplyTarget({ id: comment.id, author: comment.author })
+    setReplyText('')
     setReplyError('')
   }
 
   const handleCancelReply = () => {
-    setReplyingToCommentId(null)
+    setReplyTarget(null)
     setReplyText('')
     setReplyError('')
   }
@@ -156,20 +233,23 @@ export default function PostDetail() {
     e.preventDefault()
     setReplyError('')
 
-    const cleanBody = replyText.trim()
-    if (!cleanBody) {
+    const clean = replyText.trim()
+    if (!clean) {
       setReplyError('Reply cannot be empty.')
       return
     }
 
-    if (cleanBody.length > 2000) {
+    if (clean.length > 2000) {
       setReplyError('Reply must be 2,000 characters or less.')
       return
     }
 
+    // Embed reply reference: [reply:parentId] @author ...
+    const formattedBody = `[reply:${replyTarget.id}] @${replyTarget.author} ${clean}`
+
     setIsSubmittingReply(true)
     try {
-      const created = await addComment(id, cleanBody)
+      const created = await addComment(id, formattedBody)
       setComments((prev) => [...prev, created])
       handleCancelReply()
     } catch (err) {
@@ -198,6 +278,8 @@ export default function PostDetail() {
     }
   }
 
+  const threadedComments = useMemo(() => buildCommentTree(comments), [comments])
+
   if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center gap-2">
@@ -218,31 +300,10 @@ export default function PostDetail() {
   const isAuthor = user?.id && post.author_id === user.id
   const categoryBadgeClass = getCategoryBadgeClasses(post.category)
 
-  // Render comment body with formatted @mention badge if it is a reply
-  const renderCommentBody = (body) => {
-    const mentionMatch = body.match(/^@([A-Za-z0-9_]+)\s(.*)/s)
-    if (mentionMatch) {
-      const [, mentionedAuthor, rest] = mentionMatch
-      return (
-        <p className="text-xs leading-relaxed text-text whitespace-pre-line">
-          <span className="inline-flex items-center gap-0.5 border border-blue-200 bg-blue-50 px-1 py-0.2 text-[0.7rem] font-bold text-accent-blue mr-1.5">
-            @{mentionedAuthor}
-          </span>
-          {rest}
-        </p>
-      )
-    }
-    return (
-      <p className="text-xs leading-relaxed text-text whitespace-pre-line">
-        {body}
-      </p>
-    )
-  }
-
   return (
-    <article className="space-y-4 max-w-3xl">
+    <article className="space-y-6 max-w-3xl mx-auto">
       {/* Post Box */}
-      <div className="border border-line bg-surface p-5 sm:p-6 space-y-4">
+      <div className="border border-line bg-surface p-5 sm:p-7 space-y-4">
         {/* Header row: Category, author, date & Author actions */}
         <div className="flex items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-2">
@@ -252,7 +313,7 @@ export default function PostDetail() {
               </span>
             )}
             <span className="text-muted">
-              by <strong className="text-text">{post.author || 'Reader'}</strong>
+              by <strong className="text-text font-bold">@{post.author || 'reader'}</strong>
             </span>
             <span className="text-muted/60">•</span>
             <time dateTime={post.created_at} className="text-muted">
@@ -261,82 +322,90 @@ export default function PostDetail() {
           </div>
 
           {isAuthor && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => navigate(`/posts/${id}/edit`)}
-                className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2 py-0.5 text-xs font-semibold text-text hover:bg-surface-hover"
+                onClick={() => navigate(`/posts/${post.id}/edit`)}
+                className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-text hover:bg-surface-hover"
               >
-                <Edit3 size={11} />
+                <Edit3 size={13} />
                 <span>Edit</span>
               </button>
               <button
                 type="button"
                 onClick={handleDeletePost}
                 disabled={isDeletingPost}
-                className="press inline-flex items-center gap-1 border border-rose-300 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-800 hover:bg-rose-100 disabled:opacity-50"
+                className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-accent-red hover:bg-rose-50 disabled:opacity-50"
               >
-                <Trash2 size={11} />
+                <Trash2 size={13} />
                 <span>Delete</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Title */}
-        <h1 className="text-2xl font-bold tracking-tight text-text leading-snug">
+        {/* Post Title */}
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-text leading-tight tracking-tight">
           {post.title}
         </h1>
 
-        {/* Book Cover Image */}
-        {post.image_url && !imageError && (
-          <div className="flex justify-center border border-line bg-surface-subtle p-3">
-            <img
-              src={post.image_url}
-              alt={post.title}
-              onError={() => setImageError(true)}
-              className="max-h-96 w-auto border border-line object-contain"
-            />
-          </div>
-        )}
-
-        {/* Body Text */}
+        {/* Post Content Body */}
         {post.content && (
-          <div className="text-[0.95rem] leading-relaxed text-text whitespace-pre-line pt-1">
+          <div className="text-sm sm:text-base leading-relaxed text-text whitespace-pre-line pt-1">
             {post.content}
           </div>
         )}
 
-        {/* Upvote & Comment Count Bar */}
-        <div className="flex items-center justify-between border-t border-line pt-3 text-xs">
+        {/* Post Image (if any) */}
+        {post.image_url && !imageError && (
+          <div className="pt-2">
+            <img
+              src={post.image_url}
+              alt=""
+              onError={() => setImageError(true)}
+              className="max-h-96 w-auto border border-line-strong object-contain bg-surface-subtle"
+            />
+          </div>
+        )}
+
+        {/* Upvote & Comment counts */}
+        <div className="flex items-center gap-3 pt-3 border-t border-line">
           <button
             type="button"
             onClick={handleUpvote}
             disabled={isUpvoting}
-            aria-label={`Upvote this post. Current count: ${votes}`}
-            className="press inline-flex h-8 items-center gap-1.5 border border-line-strong bg-surface px-3 font-bold text-text hover:border-accent-red hover:text-accent-red"
+            className="press inline-flex items-center gap-1.5 border border-line-strong bg-surface px-3 py-1.5 text-xs font-bold text-text hover:border-accent-red hover:text-accent-red"
           >
-            <ArrowUp size={14} strokeWidth={2.5} aria-hidden="true" />
+            <ArrowUp size={15} strokeWidth={2.5} />
             <span className="tabular-nums">{votes}</span>
-            <span className="font-normal text-muted">Upvote</span>
+            <span>Upvote</span>
           </button>
 
-          <div className="flex items-center gap-1 text-muted">
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-muted">
             <MessageSquare size={14} />
-            <span>{comments.length} comments</span>
-          </div>
+            <span>{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</span>
+          </span>
         </div>
       </div>
 
-      {/* Comments Section with Real Threading */}
-      <section aria-label="Comments" className="space-y-3 pt-1">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted">
-          Comments ({comments.length})
-        </h2>
+      {/* COMMENTS SECTION */}
+      <section aria-label="Discussion comments" className="space-y-4">
+        <div className="flex items-center justify-between border-b border-line pb-2">
+          <h2 className="text-base font-bold text-text flex items-center gap-2">
+            <MessageSquare size={18} className="text-accent-blue" />
+            <span>Discussion Comments</span>
+            <span className="text-xs text-muted font-normal">({comments.length})</span>
+          </h2>
+        </div>
 
-        {/* Add Main Comment Form */}
+        {/* 1. TOP-LEVEL COMMENT COMPOSER (Start a new comment thread) */}
         {isAuthenticated ? (
-          <form onSubmit={handleAddComment} className="border border-line bg-surface p-4 space-y-2">
+          <form onSubmit={handleAddComment} className="border border-line bg-surface p-4 sm:p-5 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted">
+              <span className="text-base" role="img" aria-hidden="true">{avatar?.icon || '🐶'}</span>
+              <span>Start a comment thread as <strong className="text-text">@{username || 'reader'}</strong></span>
+            </div>
+
             <textarea
               rows={3}
               maxLength={2000}
@@ -346,142 +415,264 @@ export default function PostDetail() {
                 setNewComment(e.target.value)
                 setCommentError('')
               }}
-              placeholder="Start a thread or write your thoughts on this book..."
-              className={`w-full border p-2 text-xs text-text outline-none focus:border-accent-blue ${
+              placeholder="What are your thoughts on this book or review? Share your perspective..."
+              className={`w-full border p-3 text-sm text-text outline-none focus:border-accent-blue leading-relaxed ${
                 commentError ? 'border-accent-red' : 'border-line-strong'
               }`}
             />
+
             {commentError && (
               <p className="text-xs text-accent-red" role="alert">
                 {commentError}
               </p>
             )}
+
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted">{newComment.length} / 2,000</span>
+              <span className="text-muted">{newComment.length} / 2,000 characters</span>
               <button
                 type="submit"
-                disabled={isSubmittingComment}
-                className="press bg-text px-3 py-1 font-semibold text-background hover:opacity-90 disabled:opacity-50"
+                disabled={isSubmittingComment || !newComment.trim()}
+                className="press bg-text px-4 py-2 font-bold text-background hover:opacity-90 disabled:opacity-40"
               >
                 {isSubmittingComment ? 'Posting...' : 'Post Comment'}
               </button>
             </div>
           </form>
         ) : (
-          <div className="border border-line bg-surface p-3 text-xs text-muted">
+          <div className="border border-line bg-surface p-4 text-xs text-muted flex items-center justify-between">
+            <span>Join the book community to leave a comment or reply to discussions.</span>
             <button
               type="button"
               onClick={() => navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`)}
-              className="font-bold text-accent-blue hover:underline"
+              className="press border border-line-strong bg-surface px-3 py-1 font-bold text-text hover:bg-surface-hover"
             >
-              Log in
-            </button>{' '}
-            to join the discussion or reply to comments.
+              Log In
+            </button>
           </div>
         )}
 
-        {/* Threaded Comments Feed */}
-        {comments.length > 0 && (
-          <div className="space-y-2.5">
-            {comments.map((comment) => {
-              const isCommentAuthor = user?.id && comment.author_id === user.id
-              const isReply = comment.body.trim().startsWith('@')
-              const isReplying = replyingToCommentId === comment.id
+        {/* 2. THREADED COMMENTS LIST */}
+        {threadedComments.length === 0 ? (
+          <div className="border border-line bg-surface p-8 text-center text-xs text-muted">
+            No comments yet. Be the first to share your thoughts on this discussion.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {threadedComments.map((rootComment) => {
+              const isRootAuthor = user?.id && rootComment.author_id === user.id
+              const isReplyingToRoot = replyTarget?.id === rootComment.id
 
               return (
-                <div
-                  key={comment.id}
-                  className={`border border-line bg-surface p-3 space-y-2 transition-colors ${
-                    isReply ? 'ml-4 sm:ml-6 border-l-4 border-l-accent-blue/60 bg-surface-subtle/40' : ''
-                  }`}
-                >
-                  {/* Comment Author Header */}
-                  <div className="flex items-center justify-between text-xs text-muted">
-                    <div className="flex items-center gap-1.5">
-                      {isReply && (
-                        <CornerDownRight size={12} className="text-accent-blue shrink-0" aria-hidden="true" />
-                      )}
-                      <strong className="text-text font-bold">
-                        {comment.author || 'Reader'}
-                      </strong>
-                      <span>•</span>
-                      <time dateTime={comment.created_at}>{formatTimeAgo(comment.created_at)}</time>
-                    </div>
+                <div key={rootComment.id} className="space-y-2">
+                  {/* Top-Level Parent Comment Box */}
+                  <div className="border border-line bg-surface p-4 sm:p-5 space-y-2.5 transition-colors">
+                    {/* Header: Author + Time + Actions */}
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base" role="img" aria-label="avatar">
+                          {getCommentAvatar(rootComment.author, user, avatar)}
+                        </span>
+                        <strong className="text-sm font-bold text-text">
+                          @{rootComment.author || 'reader'}
+                        </strong>
+                        <span className="text-muted/60">•</span>
+                        <time dateTime={rootComment.created_at} className="text-xs text-muted">
+                          {formatTimeAgo(rootComment.created_at)}
+                        </time>
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleStartReply(comment)}
-                        className="press inline-flex items-center gap-1 text-[0.7rem] font-semibold text-muted hover:text-accent-blue"
-                        title={`Reply to ${comment.author}`}
-                      >
-                        <CornerDownRight size={11} />
-                        <span>Reply</span>
-                      </button>
-
-                      {isCommentAuthor && (
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleDeleteComment(comment.id)}
-                          disabled={deletingCommentId === comment.id}
-                          title="Delete comment"
-                          className="press text-muted hover:text-accent-red"
+                          onClick={() => handleStartReply(rootComment)}
+                          className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-muted hover:border-text hover:text-text"
+                          title={`Reply to @${rootComment.author}`}
                         >
-                          <Trash2 size={12} />
+                          <CornerDownRight size={12} />
+                          <span>Reply</span>
                         </button>
-                      )}
+
+                        {isRootAuthor && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteComment(rootComment.id)}
+                            disabled={deletingCommentId === rootComment.id}
+                            title="Delete comment"
+                            className="press text-muted hover:text-accent-red p-1"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Comment Body — 14-15px readable font size */}
+                    <p className="text-sm sm:text-[15px] font-normal leading-relaxed text-text whitespace-pre-line">
+                      {rootComment.cleanText || rootComment.body}
+                    </p>
+
+                    {/* Inline Reply Form (when replying directly to root comment) */}
+                    {isReplyingToRoot && (
+                      <form onSubmit={handleSubmitReply} className="mt-3 p-3.5 border-2 border-accent-blue/40 bg-blue-50/20 space-y-2.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-text flex items-center gap-1.5">
+                            <CornerDownRight size={13} className="text-accent-blue" />
+                            Replying to <span className="text-accent-blue font-bold">@{rootComment.author}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleCancelReply}
+                            className="text-xs text-muted hover:text-text underline font-semibold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+
+                        <textarea
+                          rows={2}
+                          required
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder={`Write your reply to @${rootComment.author}...`}
+                          className="w-full border border-line-strong bg-surface p-2.5 text-sm text-text outline-none focus:border-accent-blue"
+                        />
+
+                        {replyError && (
+                          <p className="text-xs text-accent-red">{replyError}</p>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={handleCancelReply}
+                            className="press border border-line-strong bg-surface px-3 py-1 font-semibold text-text"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isSubmittingReply || !replyText.trim()}
+                            className="press bg-text px-4 py-1.5 font-bold text-background hover:opacity-90 disabled:opacity-50"
+                          >
+                            {isSubmittingReply ? 'Posting...' : 'Post Reply'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
 
-                  {/* Comment Text */}
-                  {renderCommentBody(comment.body)}
+                  {/* Nested Replies (Indented with Left Connector Guide Line) */}
+                  {rootComment.replies && rootComment.replies.length > 0 && (
+                    <div className="ml-4 sm:ml-8 pl-3.5 sm:pl-4 border-l-2 border-line-strong space-y-2 pt-1">
+                      {rootComment.replies.map((reply) => {
+                        const isReplyAuthor = user?.id && reply.author_id === user.id
+                        const isReplyingToThisReply = replyTarget?.id === reply.id
 
-                  {/* Inline Threaded Reply Composer */}
-                  {isReplying && (
-                    <form onSubmit={handleSubmitReply} className="mt-2 pt-2 border-t border-line space-y-2">
-                      <div className="flex items-center justify-between text-[0.7rem] text-muted">
-                        <span>
-                          Replying to <strong className="text-text">@{comment.author}</strong>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleCancelReply}
-                          className="text-muted hover:text-text underline"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                        return (
+                          <div
+                            key={reply.id}
+                            className="border border-line bg-surface-subtle/60 p-3.5 sm:p-4 space-y-2 transition-colors"
+                          >
+                            {/* Reply Header */}
+                            <div className="flex items-center justify-between text-xs text-muted">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-base" role="img" aria-label="avatar">
+                                  {getCommentAvatar(reply.author, user, avatar)}
+                                </span>
+                                <strong className="text-sm font-bold text-text">
+                                  @{reply.author || 'reader'}
+                                </strong>
+                                <span className="inline-flex items-center gap-1 border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[0.68rem] font-bold text-accent-blue">
+                                  ↳ in reply to @{reply.replyToAuthor || rootComment.author}
+                                </span>
+                                <span className="text-muted/60">•</span>
+                                <time dateTime={reply.created_at} className="text-xs text-muted">
+                                  {formatTimeAgo(reply.created_at)}
+                                </time>
+                              </div>
 
-                      <textarea
-                        rows={2}
-                        required
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder={`Reply to @${comment.author}...`}
-                        className="w-full border border-line-strong bg-surface p-2 text-xs text-text outline-none focus:border-accent-blue"
-                      />
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartReply(reply)}
+                                  className="press inline-flex items-center gap-1 border border-line bg-surface px-2 py-0.5 text-xs font-semibold text-muted hover:border-text hover:text-text"
+                                  title={`Reply to @${reply.author}`}
+                                >
+                                  <CornerDownRight size={11} />
+                                  <span>Reply</span>
+                                </button>
 
-                      {replyError && (
-                        <p className="text-xs text-accent-red">{replyError}</p>
-                      )}
+                                {isReplyAuthor && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteComment(reply.id)}
+                                    disabled={deletingCommentId === reply.id}
+                                    title="Delete comment"
+                                    className="press text-muted hover:text-accent-red p-1"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
 
-                      <div className="flex items-center justify-end gap-2 text-xs">
-                        <button
-                          type="button"
-                          onClick={handleCancelReply}
-                          className="press border border-line-strong px-2.5 py-1 text-xs font-semibold text-text"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={isSubmittingReply}
-                          className="press bg-text px-3 py-1 text-xs font-semibold text-background hover:opacity-90 disabled:opacity-50"
-                        >
-                          {isSubmittingReply ? 'Posting...' : 'Post Reply'}
-                        </button>
-                      </div>
-                    </form>
+                            {/* Reply Body — 14-15px readable font size */}
+                            <p className="text-sm sm:text-[15px] font-normal leading-relaxed text-text whitespace-pre-line">
+                              {reply.cleanText || reply.body}
+                            </p>
+
+                            {/* Inline Reply Form (when replying to this nested reply) */}
+                            {isReplyingToThisReply && (
+                              <form onSubmit={handleSubmitReply} className="mt-3 p-3 border-2 border-accent-blue/40 bg-surface space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-bold text-text flex items-center gap-1.5">
+                                    <CornerDownRight size={13} className="text-accent-blue" />
+                                    Replying to <span className="text-accent-blue font-bold">@{reply.author}</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelReply}
+                                    className="text-xs text-muted hover:text-text underline font-semibold"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+
+                                <textarea
+                                  rows={2}
+                                  required
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  placeholder={`Write your reply to @${reply.author}...`}
+                                  className="w-full border border-line-strong bg-surface p-2 text-sm text-text outline-none focus:border-accent-blue"
+                                />
+
+                                {replyError && (
+                                  <p className="text-xs text-accent-red">{replyError}</p>
+                                )}
+
+                                <div className="flex items-center justify-end gap-2 text-xs">
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelReply}
+                                    className="press border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-text"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="submit"
+                                    disabled={isSubmittingReply || !replyText.trim()}
+                                    className="press bg-text px-3 py-1 text-xs font-bold text-background hover:opacity-90 disabled:opacity-50"
+                                  >
+                                    {isSubmittingReply ? 'Posting...' : 'Post Reply'}
+                                  </button>
+                                </div>
+                              </form>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                 </div>
               )

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './lib/auth.jsx'
 import Home from './pages/Home.jsx'
 import PostDetail from './pages/PostDetail.jsx'
 import PostForm from './pages/PostForm.jsx'
+import Profile from './pages/Profile.jsx'
 import Auth from './pages/Auth.jsx'
 import NotFound from './pages/NotFound.jsx'
 
@@ -50,6 +51,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PostForm mode="edit" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

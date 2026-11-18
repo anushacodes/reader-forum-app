@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { ArrowUp, BookOpen, MessageSquare } from 'lucide-react'
+import { ArrowUp, MessageSquare } from 'lucide-react'
 import { formatTimeAgo } from '../lib/date.js'
 import { getCategoryBadgeClasses } from '../lib/categories.js'
 
-export default function PostCard({ post, viewMode = 'compact', onUpvote }) {
+export default function PostCard({ post, onUpvote }) {
   const [votes, setVotes] = useState(post.upvotes ?? 0)
   const [isUpvoting, setIsUpvoting] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -31,43 +31,41 @@ export default function PostCard({ post, viewMode = 'compact', onUpvote }) {
 
   const categoryBadgeClass = getCategoryBadgeClasses(post.category)
 
-  // --- 1. COMPACT MODE (Clean Reddit + forum list, sharp rectilinear borders) ---
-  if (viewMode === 'compact') {
-    return (
-      <article className="flex items-start gap-3.5 border-b border-line bg-surface p-3 transition-colors hover:bg-surface-subtle">
-        {/* Sharp Rectangular Upvote Button */}
-        <button
-          type="button"
-          onClick={handleUpvoteClick}
-          disabled={isUpvoting}
-          aria-label={`Upvote discussion: ${post.title}. Current count: ${votes}`}
-          className="press flex h-12 w-10 shrink-0 flex-col items-center justify-center border border-line-strong bg-surface text-muted hover:border-accent-red hover:bg-rose-50 hover:text-accent-red dark:hover:bg-rose-950/30"
-        >
-          <ArrowUp size={15} strokeWidth={2.5} aria-hidden="true" />
-          <span className="text-xs font-bold tabular-nums text-text">{votes}</span>
-        </button>
+  return (
+    <article className="flex items-stretch border border-line bg-surface transition-colors hover:border-line-strong">
+      {/* Upvote Pillar (Left) */}
+      <button
+        type="button"
+        onClick={handleUpvoteClick}
+        disabled={isUpvoting}
+        aria-label={`Upvote discussion: ${post.title}. Current count: ${votes}`}
+        className="press flex w-12 sm:w-14 shrink-0 flex-col items-center justify-center border-r border-line bg-surface-subtle/50 text-muted transition-colors hover:bg-rose-50 hover:text-accent-red"
+      >
+        <ArrowUp size={16} strokeWidth={2.5} aria-hidden="true" />
+        <span className="text-xs font-bold tabular-nums text-text mt-1">{votes}</span>
+      </button>
 
-        {/* Content Column */}
-        <div className="min-w-0 flex-1">
-          {/* Metadata */}
-          <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
+      {/* Main Content Column */}
+      <div className="flex-1 p-3.5 sm:p-4 min-w-0 flex flex-col justify-between">
+        <div>
+          {/* Metadata Row */}
+          <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
             {post.category && (
               <span className={`inline-block px-1.5 py-0.5 text-[0.7rem] font-bold tracking-wide uppercase ${categoryBadgeClass}`}>
                 {post.category}
               </span>
             )}
             <span className="text-muted text-[0.75rem]">
-              <time dateTime={post.created_at}>{formatTimeAgo(post.created_at)}</time>
+              by <strong className="font-semibold text-text">@{post.author || 'reader'}</strong>
             </span>
-            {post.author && (
-              <span className="text-muted text-[0.75rem]">
-                by <span className="font-medium text-text">{post.author}</span>
-              </span>
-            )}
+            <span className="text-muted/60">•</span>
+            <time dateTime={post.created_at} className="text-muted text-[0.75rem]">
+              {formatTimeAgo(post.created_at)}
+            </time>
           </div>
 
-          {/* Title Link */}
-          <h2 className="text-base font-semibold leading-snug text-text">
+          {/* Post Title */}
+          <h2 className="text-base sm:text-lg font-bold leading-snug text-text">
             <Link
               to={`/posts/${post.id}`}
               className="hover:text-accent-blue hover:underline focus:outline-none"
@@ -75,104 +73,46 @@ export default function PostCard({ post, viewMode = 'compact', onUpvote }) {
               {post.title}
             </Link>
           </h2>
+
+          {/* Text preview snippet (only if content exists, no empty gap) */}
+          {post.content && (
+            <p className="mt-1.5 text-xs sm:text-sm text-muted line-clamp-2 leading-relaxed">
+              {post.content}
+            </p>
+          )}
         </div>
 
-        {/* Book Thumbnail */}
-        {post.image_url && !imageError && (
+        {/* Footer: Comments link */}
+        <div className="mt-3 flex items-center gap-3 pt-2 text-xs text-muted border-t border-line/60">
           <Link
             to={`/posts/${post.id}`}
-            className="hidden shrink-0 sm:block"
+            className="inline-flex items-center gap-1.5 font-semibold text-muted hover:text-text"
+          >
+            <MessageSquare size={13} />
+            <span>{post.commentsCount ?? 0} {post.commentsCount === 1 ? 'comment' : 'comments'}</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Thumbnail on Right (only if image exists and didn't fail) */}
+      {post.image_url && !imageError && (
+        <div className="shrink-0 p-3 sm:p-4 pl-0 flex items-center justify-center">
+          <Link
+            to={`/posts/${post.id}`}
             tabIndex={-1}
             aria-hidden="true"
+            className="block"
           >
             <img
               src={post.image_url}
               alt=""
               onError={() => setImageError(true)}
               loading="lazy"
-              className="h-16 w-12 border border-line-strong object-cover"
+              className="h-20 w-16 sm:h-24 sm:w-18 border border-line-strong object-cover bg-surface-subtle"
             />
           </Link>
-        )}
-      </article>
-    )
-  }
-
-  // --- 2. VISUAL MODE (Sharp rectilinear book grid) ---
-  return (
-    <article className="flex flex-col border border-line bg-surface p-4 transition-colors hover:border-line-strong">
-      {/* Cover Viewport */}
-      <Link
-        to={`/posts/${post.id}`}
-        className="block border border-line bg-surface-subtle"
-        tabIndex={-1}
-      >
-        {post.image_url && !imageError ? (
-          <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden bg-surface-subtle">
-            <img
-              src={post.image_url}
-              alt={post.title}
-              onError={() => setImageError(true)}
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="flex aspect-[16/10] w-full flex-col items-center justify-center gap-2 bg-surface-subtle p-6 text-center text-muted">
-            <BookOpen size={28} strokeWidth={1.5} className="text-accent-blue" />
-            <span className="text-xs font-semibold uppercase text-muted">
-              {post.category || 'Discussion'}
-            </span>
-          </div>
-        )}
-      </Link>
-
-      <div className="flex flex-1 flex-col pt-3">
-        {/* Category & Time */}
-        <div className="mb-2 flex items-center justify-between text-xs">
-          <span className={`inline-block px-1.5 py-0.5 text-[0.7rem] font-bold uppercase ${categoryBadgeClass}`}>
-            {post.category}
-          </span>
-          <time dateTime={post.created_at} className="text-[0.75rem] text-muted">
-            {formatTimeAgo(post.created_at)}
-          </time>
         </div>
-
-        {/* Title */}
-        <h2 className="mb-3 text-base font-semibold text-text leading-snug">
-          <Link
-            to={`/posts/${post.id}`}
-            className="hover:text-accent-blue hover:underline focus:outline-none"
-          >
-            {post.title}
-          </Link>
-        </h2>
-
-        {/* Footer: Author, Comments & Upvote */}
-        <div className="mt-auto flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
-          <span>
-            by <strong className="font-semibold text-text">{post.author || 'Reader'}</strong>
-          </span>
-
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-[0.7rem] text-muted" title={`${post.commentsCount ?? 0} comments`}>
-              <MessageSquare size={12} />
-              <span>{post.commentsCount ?? 0}</span>
-            </span>
-
-            <button
-              type="button"
-              onClick={handleUpvoteClick}
-              disabled={isUpvoting}
-              aria-label={`Upvote discussion: ${post.title}. Current count: ${votes}`}
-              className="press inline-flex h-7 items-center justify-center gap-1 border border-line-strong bg-surface px-2.5 text-xs font-semibold text-text hover:border-accent-red hover:text-accent-red"
-            >
-              <ArrowUp size={13} strokeWidth={2.5} aria-hidden="true" />
-              <span className="tabular-nums">{votes}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
     </article>
   )
 }

@@ -53,7 +53,7 @@ export default function Auth({ mode = 'login' }) {
     }
 
     if (!email.trim()) {
-      setErrorMessage('Please enter your email.')
+      setErrorMessage(isSignup ? 'Please enter your email.' : 'Please enter your email or username.')
       return
     }
 
@@ -82,7 +82,7 @@ export default function Auth({ mode = 'login' }) {
         navigate(safeNext, { replace: true })
       } else {
         await login({
-          email: email.trim(),
+          identifier: email.trim(),
           password,
         })
         navigate(safeNext, { replace: true })
@@ -239,17 +239,17 @@ export default function Auth({ mode = 'login' }) {
               )}
 
               <div>
-                <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
-                  Email
+                <label htmlFor="identifier" className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
+                  {isSignup ? 'Email' : 'Email or Username'}
                 </label>
                 <input
-                  id="email"
-                  type="email"
+                  id="identifier"
+                  type={isSignup ? 'email' : 'text'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder={isSignup ? 'name@example.com' : 'username or email@example.com'}
                   required
-                  autoComplete="email"
+                  autoComplete={isSignup ? 'email' : 'username'}
                   className="w-full border border-line-strong bg-surface px-3 py-2 text-sm text-text outline-none focus:border-accent-blue"
                 />
               </div>
