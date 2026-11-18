@@ -267,11 +267,35 @@ export async function getPostById(id) {
   }
 }
 
+/**
+ * Normalizes user-submitted image URLs.
+ * If a user pastes a Pexels or Unsplash photo webpage link, converts it to the direct image CDN URL.
+ */
+export function normalizeImageUrl(inputUrl) {
+  if (!inputUrl) return ''
+  const trimmed = inputUrl.trim()
+
+  // Pexels photo webpage: https://www.pexels.com/photo/...-8762862/ or https://www.pexels.com/photo/8762862/
+  const pexelsMatch = trimmed.match(/pexels\.com\/photo\/(?:[^/]+-)?(\d+)\/?/i)
+  if (pexelsMatch && pexelsMatch[1]) {
+    return `https://images.pexels.com/photos/${pexelsMatch[1]}/pexels-photo-${pexelsMatch[1]}.jpeg?auto=compress&cs=tinysrgb&w=1200`
+  }
+
+  // Unsplash photo webpage: https://unsplash.com/photos/...-xyz
+  const unsplashMatch = trimmed.match(/unsplash\.com\/photos\/(?:[^/]+-)?([a-zA-Z0-9_-]{8,})\/?$/i)
+  if (unsplashMatch && unsplashMatch[1]) {
+    return `https://images.unsplash.com/${unsplashMatch[1]}?w=1200&auto=format&fit=crop&q=85`
+  }
+
+  return trimmed
+}
+
 function getPostPayload({ title, content, category, image_url }) {
   const cleanTitle = (title || '').trim()
   const cleanContent = (content || '').trim() || null
   const cleanCategory = CATEGORIES.includes(category) ? category : 'Opinion'
-  const cleanImageUrl = (image_url || '').trim() || null
+  const rawImageUrl = (image_url || '').trim()
+  const cleanImageUrl = normalizeImageUrl(rawImageUrl) || null
 
   return { title: cleanTitle, content: cleanContent, category: cleanCategory, image_url: cleanImageUrl }
 }

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { Loader2, AlertCircle, Image as ImageIcon, X } from 'lucide-react'
 import { CATEGORIES, getCategoryBadgeClasses } from '../lib/categories.js'
 import { useAuth } from '../lib/authContext.js'
-import { getPostById, createPost, updatePost } from '../lib/posts.js'
+import { getPostById, createPost, updatePost, normalizeImageUrl } from '../lib/posts.js'
 
 export default function PostForm({ mode = 'create' }) {
   const isEdit = mode === 'edit'
@@ -275,6 +275,9 @@ export default function PostForm({ mode = 'create' }) {
             <label htmlFor="post-image-url" className="block text-xs font-semibold text-text">
               Image URL <span className="text-muted font-normal lowercase">(optional)</span>
             </label>
+            <p className="text-[0.7rem] text-muted mt-0.5">
+              Direct image link or Pexels/Unsplash photo URL (automatically converted)
+            </p>
             <div className="relative mt-1">
               <input
                 id="post-image-url"
@@ -282,10 +285,23 @@ export default function PostForm({ mode = 'create' }) {
                 maxLength={2048}
                 value={imageUrl}
                 onChange={(e) => {
-                  setImageUrl(e.target.value)
+                  const normalized = normalizeImageUrl(e.target.value)
+                  setImageUrl(normalized)
                   setImagePreviewFailed(false)
                   if (fieldErrors.imageUrl) {
                     setFieldErrors((prev) => ({ ...prev, imageUrl: undefined }))
+                  }
+                }}
+                onPaste={(e) => {
+                  const pasted = e.clipboardData?.getData('text')
+                  if (pasted) {
+                    e.preventDefault()
+                    const normalized = normalizeImageUrl(pasted)
+                    setImageUrl(normalized)
+                    setImagePreviewFailed(false)
+                    if (fieldErrors.imageUrl) {
+                      setFieldErrors((prev) => ({ ...prev, imageUrl: undefined }))
+                    }
                   }
                 }}
                 placeholder="https://... image link"
