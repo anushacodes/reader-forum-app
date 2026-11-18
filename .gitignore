@@ -1,22 +1,27 @@
-# --- Local planning & agent material (never pushed) ---
+# --- Local planning, agent material & local notes (never pushed) ---
+*.md
+!README.md
+AGENTS.md
+CLAUDE.md
+TASKS.md
 plan.md
 project-plan.md
 codepath-reqs.md
-TASKS.md
 demo.html
 demo-ui/
 docs/
-.superpowers/
+skills-lock.json
+public/brand/
+
+# Agent directories and tools
 .agents/
 .agent/
 .claude/
 .codex/
 .impeccable/
-AGENTS.md
-CLAUDE.md
-skills-lock.json
+.superpowers/
 
-# --- Dependencies & builds ---
+# --- Dependencies & builds (Vite standard) ---
 node_modules/
 dist/
 dist-ssr/
@@ -37,4 +42,3 @@ npm-debug.log*
 .idea/
 .DS_Store
 *.sw?
-public/brand/
