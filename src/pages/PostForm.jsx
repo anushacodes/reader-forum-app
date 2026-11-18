@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { Loader2, AlertCircle, Image as ImageIcon, X } from 'lucide-react'
-import { CATEGORIES } from '../lib/categories.js'
+import { CATEGORIES, getCategoryBadgeClasses } from '../lib/categories.js'
 import { useAuth } from '../lib/authContext.js'
 import { getPostById, createPost, updatePost } from '../lib/posts.js'
 
@@ -160,7 +160,7 @@ export default function PostForm({ mode = 'create' }) {
 
   if (unauthorized) {
     return (
-      <div className="mx-auto max-w-lg py-16 text-center border border-line bg-surface p-6">
+      <div className="mx-auto max-w-lg py-16 px-6 text-center">
         <h1 className="text-xl font-bold text-text">Not authorized</h1>
         <p className="mt-2 text-xs text-muted">You can only edit posts that you authored.</p>
         <Link
@@ -175,7 +175,7 @@ export default function PostForm({ mode = 'create' }) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div className="border border-line bg-surface p-6 sm:p-8 space-y-5">
+      <div className="py-4 sm:py-6 space-y-7">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text">
             {isEdit ? 'Edit Post' : 'Create Post'}
@@ -190,7 +190,7 @@ export default function PostForm({ mode = 'create' }) {
         {errorMessage && (
           <div
             role="alert"
-            className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800"
+            className="flex items-start gap-2 border-l-2 border-rose-300 bg-rose-50 p-3 text-xs text-rose-800"
           >
             <AlertCircle size={15} className="mt-0.5 shrink-0 text-accent-red" aria-hidden="true" />
             <span>{errorMessage}</span>
@@ -201,7 +201,7 @@ export default function PostForm({ mode = 'create' }) {
           {/* Title */}
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="post-title" className="block text-xs font-bold uppercase tracking-wider text-text">
+              <label htmlFor="post-title" className="block text-xs font-semibold text-text">
                 Title <span className="text-accent-red">*</span>
               </label>
               <span className="text-xs text-muted">{title.length} / 160</span>
@@ -228,7 +228,7 @@ export default function PostForm({ mode = 'create' }) {
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
+            <label className="block text-xs font-semibold text-text mb-1">
               Category
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -239,16 +239,9 @@ export default function PostForm({ mode = 'create' }) {
                     key={cat}
                     type="button"
                     onClick={() => setCategory(cat)}
-                    className={`press px-3 py-1 text-xs font-bold uppercase tracking-wider border ${
-                      isSelected
-                        ? cat === 'Review'
-                          ? 'border-amber-800 bg-amber-800 text-white'
-                          : cat === 'Recommendation'
-                            ? 'border-blue-700 bg-blue-700 text-white'
-                            : cat === 'Question'
-                              ? 'border-indigo-700 bg-indigo-700 text-white'
-                              : 'border-rose-700 bg-rose-700 text-white'
-                        : 'border-line-strong bg-surface text-text hover:bg-surface-hover'
+                    aria-pressed={isSelected}
+                    className={`press px-3 py-2 text-xs font-semibold ${
+                      isSelected ? getCategoryBadgeClasses(cat) : 'text-muted hover:bg-surface-subtle hover:text-text'
                     }`}
                   >
                     {cat}
@@ -261,7 +254,7 @@ export default function PostForm({ mode = 'create' }) {
           {/* Body */}
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="post-content" className="block text-xs font-bold uppercase tracking-wider text-text">
+              <label htmlFor="post-content" className="block text-xs font-semibold text-text">
                 Content <span className="text-muted font-normal lowercase">(optional)</span>
               </label>
               <span className="text-xs text-muted">{content.length} / 10,000</span>
@@ -279,7 +272,7 @@ export default function PostForm({ mode = 'create' }) {
 
           {/* Image URL */}
           <div>
-            <label htmlFor="post-image-url" className="block text-xs font-bold uppercase tracking-wider text-text">
+            <label htmlFor="post-image-url" className="block text-xs font-semibold text-text">
               Image URL <span className="text-muted font-normal lowercase">(optional)</span>
             </label>
             <div className="relative mt-1">
@@ -319,15 +312,15 @@ export default function PostForm({ mode = 'create' }) {
 
             {/* Live Preview */}
             {imageUrl && !fieldErrors.imageUrl && (
-              <div className="mt-2 border border-line bg-surface-subtle p-3">
+              <div className="mt-3 bg-surface-subtle p-4">
                 <p className="mb-2 text-xs font-bold uppercase text-muted">Preview</p>
                 {imagePreviewFailed ? (
-                  <div className="flex h-24 items-center justify-center gap-2 border border-line bg-surface text-xs text-muted">
+                  <div className="flex h-24 items-center justify-center gap-2 text-xs text-muted">
                     <ImageIcon size={16} />
                     <span>Failed to load image preview</span>
                   </div>
                 ) : (
-                  <div className="flex max-h-52 justify-center border border-line bg-surface p-2">
+                  <div className="flex max-h-52 justify-center p-2">
                     <img
                       src={imageUrl}
                       alt="Preview"
@@ -345,14 +338,14 @@ export default function PostForm({ mode = 'create' }) {
             <Link
               to={isEdit ? `/posts/${id}` : '/'}
               onClick={handleCancelClick}
-              className="press border border-line-strong px-4 py-1.5 text-xs font-semibold text-text hover:bg-surface-hover"
+              className="press px-4 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="press border border-text bg-text px-5 py-1.5 text-xs font-semibold text-background hover:opacity-90 disabled:opacity-50"
+              className="press bg-text px-5 py-2 text-xs font-semibold text-background hover:opacity-90 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-1.5">

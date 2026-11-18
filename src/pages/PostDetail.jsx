@@ -8,12 +8,11 @@ import { useAuth } from '../lib/authContext.js'
 import { formatTimeAgo } from '../lib/date.js'
 import { getCategoryBadgeClasses } from '../lib/categories.js'
 import CommentThread from '../components/CommentThread.jsx'
-import { AvatarIcon } from '../components/Avatars.jsx'
 
 export default function PostDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, username, avatar, isAuthenticated } = useAuth()
+  const { user, username, isAuthenticated } = useAuth()
 
   // Post states
   const [post, setPost] = useState(null)
@@ -217,7 +216,7 @@ export default function PostDetail() {
 
   if (postError || !post) {
     return (
-      <div className="border border-line bg-surface p-8 text-center">
+      <div className="py-12 text-center">
         <h1 className="text-lg font-bold text-text">Post not found</h1>
       </div>
     )
@@ -228,8 +227,8 @@ export default function PostDetail() {
 
   return (
     <article className="space-y-6 max-w-3xl mx-auto">
-      {/* Post Box */}
-      <div className="border border-line bg-surface p-5 sm:p-7 space-y-4">
+      {/* Discussion */}
+      <div className="py-4 sm:py-6 space-y-5">
         {/* Header row: Category, author, date & Author actions */}
         <div className="flex items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-2">
@@ -252,7 +251,7 @@ export default function PostDetail() {
               <button
                 type="button"
                 onClick={() => navigate(`/posts/${post.id}/edit`)}
-                className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-text hover:bg-surface-hover"
+                className="press inline-flex items-center gap-1 px-2.5 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
               >
                 <Edit3 size={13} />
                 <span>Edit</span>
@@ -261,7 +260,7 @@ export default function PostDetail() {
                 type="button"
                 onClick={handleDeletePost}
                 disabled={isDeletingPost}
-                className="press inline-flex items-center gap-1 border border-line-strong bg-surface px-2.5 py-1 text-xs font-semibold text-accent-red hover:bg-rose-50 disabled:opacity-50"
+                className="press inline-flex items-center gap-1 px-2.5 py-2 text-xs font-semibold text-accent-red hover:bg-rose-50 disabled:opacity-50"
               >
                 <Trash2 size={13} />
                 <span>Delete</span>
@@ -271,13 +270,13 @@ export default function PostDetail() {
         </div>
 
         {/* Post Title */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-text leading-tight tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-text leading-tight tracking-tight">
           {post.title}
         </h1>
 
         {/* Post Content Body */}
         {post.content && (
-          <div className="text-sm sm:text-base leading-relaxed text-text whitespace-pre-line pt-1">
+          <div className="text-sm sm:text-base leading-[1.85] text-text whitespace-pre-line pt-1">
             {post.content}
           </div>
         )}
@@ -289,7 +288,7 @@ export default function PostDetail() {
               src={post.image_url}
               alt=""
               onError={() => setImageError(true)}
-              className="max-h-96 w-auto border border-line-strong object-contain bg-surface-subtle"
+              className="max-h-96 w-auto rounded-[2px] object-contain bg-surface-subtle"
             />
           </div>
         )}
@@ -300,7 +299,7 @@ export default function PostDetail() {
             type="button"
             onClick={handleUpvote}
             disabled={isUpvoting}
-            className="press inline-flex items-center gap-1.5 border border-line-strong bg-surface px-3 py-1.5 text-xs font-bold text-text hover:border-accent-red hover:text-accent-red"
+            className="press inline-flex items-center gap-1.5 bg-surface-subtle px-3 py-2 text-xs font-bold text-text hover:text-accent-red"
           >
             <ArrowUp size={15} strokeWidth={2.5} />
             <span className="tabular-nums">{votes}</span>
@@ -326,11 +325,8 @@ export default function PostDetail() {
 
         {/* 1. TOP-LEVEL COMMENT COMPOSER (Start a new comment thread) */}
         {isAuthenticated ? (
-          <form onSubmit={handleAddComment} className="border border-line bg-surface p-4 sm:p-5 space-y-3">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted">
-              <div className="h-5 w-5 shrink-0 flex items-center justify-center">
-                <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
-              </div>
+          <form onSubmit={handleAddComment} className="rounded-[3px] bg-surface-subtle p-4 sm:p-5 space-y-3">
+            <div className="text-xs font-medium text-muted">
               <span>Start a comment thread as <strong className="text-text">@{username || 'reader'}</strong></span>
             </div>
 
@@ -367,12 +363,12 @@ export default function PostDetail() {
             </div>
           </form>
         ) : (
-          <div className="border border-line bg-surface p-4 text-xs text-muted flex items-center justify-between">
+          <div className="py-5 text-xs text-muted flex flex-wrap items-center justify-between gap-3">
             <span>Join the book community to leave a comment or reply to discussions.</span>
             <button
               type="button"
               onClick={() => navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`)}
-              className="press border border-line-strong bg-surface px-3 py-1 font-bold text-text hover:bg-surface-hover"
+              className="press bg-surface-subtle px-3 py-2 font-semibold text-text hover:bg-surface-hover"
             >
               Log In
             </button>
@@ -381,7 +377,7 @@ export default function PostDetail() {
 
         {/* 2. THREADED COMMENTS LIST */}
         {threadedComments.length === 0 ? (
-          <div className="border border-line bg-surface p-8 text-center text-xs text-muted">
+          <div className="py-12 text-center text-xs text-muted">
             No comments yet. Be the first to share your thoughts on this discussion.
           </div>
         ) : (
@@ -391,7 +387,6 @@ export default function PostDetail() {
                 key={comment.id}
                 comment={comment}
                 userId={user?.id}
-                avatar={avatar}
                 deletingCommentId={deletingCommentId}
                 onReply={handleStartReply}
                 onDelete={handleDeleteComment}

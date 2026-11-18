@@ -32,21 +32,21 @@ export default function PostCard({ post, onUpvote }) {
   const categoryBadgeClass = getCategoryBadgeClasses(post.category)
 
   return (
-    <article className="flex items-stretch border border-line bg-surface transition-colors hover:border-line-strong">
-      {/* Upvote Pillar (Left) */}
+    <article className="flex items-start border-b border-line/70 py-5 transition-colors hover:bg-surface/70">
+      {/* Upvote */}
       <button
         type="button"
         onClick={handleUpvoteClick}
         disabled={isUpvoting}
         aria-label={`Upvote discussion: ${post.title}. Current count: ${votes}`}
-        className="press flex w-12 sm:w-14 shrink-0 flex-col items-center justify-center border-r border-line bg-surface-subtle/50 text-muted transition-colors hover:bg-rose-50 hover:text-accent-red"
+        className="press mt-6 flex min-h-12 w-10 sm:w-12 shrink-0 flex-col items-center justify-center text-muted transition-colors hover:text-accent-red"
       >
         <ArrowUp size={16} strokeWidth={2.5} aria-hidden="true" />
         <span className="text-xs font-bold tabular-nums text-text mt-1">{votes}</span>
       </button>
 
       {/* Main Content Column */}
-      <div className="flex-1 p-3.5 sm:p-4 min-w-0 flex flex-col justify-between">
+      <div className="flex-1 px-3 py-1 sm:px-4 min-w-0 flex flex-col justify-between">
         <div>
           {/* Metadata Row */}
           <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs">
@@ -65,10 +65,10 @@ export default function PostCard({ post, onUpvote }) {
           </div>
 
           {/* Post Title */}
-          <h2 className="text-base sm:text-lg font-bold leading-snug text-text">
+          <h2 className="text-base sm:text-lg font-semibold leading-snug text-text">
             <Link
               to={`/posts/${post.id}`}
-              className="hover:text-accent-blue hover:underline focus:outline-none"
+              className="hover:text-accent-blue hover:underline"
             >
               {post.title}
             </Link>
@@ -83,7 +83,7 @@ export default function PostCard({ post, onUpvote }) {
         </div>
 
         {/* Footer: Comments link */}
-        <div className="mt-3 flex items-center gap-3 pt-2 text-xs text-muted border-t border-line/60">
+        <div className="mt-3 flex items-center gap-3 text-xs text-muted">
           <Link
             to={`/posts/${post.id}`}
             className="inline-flex items-center gap-1.5 font-semibold text-muted hover:text-text"
@@ -96,7 +96,7 @@ export default function PostCard({ post, onUpvote }) {
 
       {/* Thumbnail on Right (only if image exists and didn't fail) */}
       {post.image_url && !imageError && (
-        <div className="shrink-0 p-3 sm:p-4 pl-0 flex items-center justify-center">
+        <div className="shrink-0 pl-2 pr-2 sm:pr-4 py-1 flex items-center justify-center">
           <Link
             to={`/posts/${post.id}`}
             tabIndex={-1}
@@ -108,7 +108,7 @@ export default function PostCard({ post, onUpvote }) {
               alt=""
               onError={() => setImageError(true)}
               loading="lazy"
-              className="h-20 w-16 sm:h-24 sm:w-18 border border-line-strong object-cover bg-surface-subtle"
+              className="h-20 w-14 sm:h-24 sm:w-18 rounded-[2px] object-cover bg-surface-subtle"
             />
           </Link>
         </div>

@@ -1,33 +1,30 @@
 @import 'tailwindcss';
 
-/* Theme tokens — Pure white background, sharp rectilinear web styling. Light mode only. */
+/* Warm paper tones and quiet separators. */
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --surface: #ffffff;
-  --surface-subtle: #f9fafb;
-  --surface-hover: #f3f4f6;
-  --text: #111827;
-  --muted: #4b5563;
-  --line: #e5e7eb;
-  --line-strong: #d1d5db;
-  --input-border: #9ca3af;
+  --background: #faf9f6;
+  --surface: #fffefb;
+  --surface-subtle: #f0eee8;
+  --surface-hover: #eae7df;
+  --text: #2d302c;
+  --muted: #65685f;
+  --line: #e3e0d7;
+  --line-strong: #c5c0b4;
+  --input-border: #a49e90;
 
   /* Colors: reds, blues, browns */
-  --accent-red: #dc2626;
-  --accent-red-hover: #b91c1c;
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #1d4ed8;
-  --accent-brown: #78350f;
-  --accent-brown-hover: #92400e;
+  --accent-red: #b43e32;
+  --accent-red-hover: #963329;
+  --accent-blue: #365f76;
+  --accent-brown: #795c43;
 
   --accent: var(--accent-red);
   --accent-hover: var(--accent-red-hover);
 
-  --image-outline: #e5e7eb;
 }
 
-/* Expose tokens as Tailwind utilities — all radii 0px (no rounded corners!) */
+/* Shared colors and restrained control corners. */
 @theme inline {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --color-background: var(--background);
@@ -42,17 +39,17 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-red: var(--accent-red);
+  --color-accent-red-hover: var(--accent-red-hover);
   --color-accent-blue: var(--accent-blue);
   --color-accent-brown: var(--accent-brown);
 
-  --radius-ui: 0px;
-  --radius-card: 0px;
-  --radius-outer: 0px;
+  --radius-ui: 3px;
 }
 
 @layer base {
-  * {
-    border-radius: 0 !important;
+  :where(button, input, textarea, select, .press) {
+    border-radius: var(--radius-ui);
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
   }
 
   body {
@@ -96,4 +93,13 @@
 /* Press feedback: subtle shift */
 .press:not(:disabled):active {
   transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

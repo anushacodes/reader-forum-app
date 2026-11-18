@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from './supabase.js'
-import { getUserAvatar, setUserAvatar } from './avatar.js'
 import { AuthContext } from './authContext.js'
 
 const DEMO_STORAGE_KEY = 'dogear.demo_user'
@@ -65,7 +64,6 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => (initialDemo ? { user: initialDemo } : null))
   const [user, setUser] = useState(() => initialDemo ?? null)
   const [profile, setProfile] = useState(() => (initialDemo ? { id: initialDemo.id, username: initialDemo.username } : null))
-  const [avatar, setAvatarState] = useState(() => getUserAvatar(initialDemo?.id))
   const [loading, setLoading] = useState(() => Boolean(isSupabaseConfigured))
 
   // Fetch or refresh profile row from Supabase
@@ -103,7 +101,6 @@ export function AuthProvider({ children }) {
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
       if (currentSession?.user) {
-        setAvatarState(getUserAvatar(currentSession.user.id))
         loadProfile(currentSession.user.id).finally(() => {
           if (mounted) setLoading(false)
         })
@@ -119,7 +116,6 @@ export function AuthProvider({ children }) {
       setSession(newSession)
       setUser(newSession?.user ?? null)
       if (newSession?.user) {
-        setAvatarState(getUserAvatar(newSession.user.id))
         await loadProfile(newSession.user.id)
       } else {
         setProfile(null)
@@ -276,16 +272,6 @@ export function AuthProvider({ children }) {
   }
 
   /**
-   * Change user avatar
-   */
-  const updateAvatar = useCallback((avatarId) => {
-    if (user?.id) {
-      setUserAvatar(user.id, avatarId)
-      setAvatarState(getUserAvatar(user.id))
-    }
-  }, [user])
-
-  /**
    * Sign out
    */
   const logout = async () => {
@@ -305,8 +291,6 @@ export function AuthProvider({ children }) {
       user,
       profile,
       username: profile?.username || user?.user_metadata?.username || user?.username || null,
-      avatar,
-      updateAvatar,
       updateUsername,
       loading,
       isAuthenticated: Boolean(user),
@@ -316,7 +300,7 @@ export function AuthProvider({ children }) {
       logout,
       updatePassword,
     }),
-    [session, user, profile, avatar, loading, updateUsername, updateAvatar]
+    [session, user, profile, loading, updateUsername]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

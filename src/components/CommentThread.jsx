@@ -1,13 +1,11 @@
 import { CornerDownRight, Trash2 } from 'lucide-react'
 import { formatTimeAgo } from '../lib/date.js'
-import { getCommentAvatarId } from '../lib/avatar.js'
-import { AvatarIcon } from './Avatars.jsx'
 
-function ReplyComposer({ author, reply, nested }) {
+function ReplyComposer({ author, reply }) {
   return (
     <form
       onSubmit={reply.onSubmit}
-      className={`mt-3 border-2 border-accent-blue/40 ${nested ? 'p-3 bg-surface space-y-2' : 'p-3.5 bg-blue-50/20 space-y-2.5'}`}
+      className="mt-4 border-l-2 border-line pl-4 space-y-3"
     >
       <div className="flex items-center justify-between text-xs">
         <span className="font-bold text-text flex items-center gap-1.5">
@@ -29,14 +27,14 @@ function ReplyComposer({ author, reply, nested }) {
         onChange={(event) => reply.onChange(event.target.value)}
         placeholder={`Write your reply to @${author}...`}
         aria-label={`Reply to @${author}`}
-        className={`w-full border border-line-strong bg-surface text-sm text-text outline-none focus:border-accent-blue ${nested ? 'p-2' : 'p-2.5'}`}
+        className="w-full border border-line-strong bg-surface p-3 text-sm text-text outline-none focus:border-accent-blue"
       />
       {reply.error && <p className="text-xs text-accent-red" role="alert">{reply.error}</p>}
       <div className="flex items-center justify-end gap-2 text-xs">
         <button
           type="button"
           onClick={reply.onCancel}
-          className="press border border-line-strong bg-surface px-3 py-1 font-semibold text-text"
+          className="press px-3 py-2 font-semibold text-muted hover:text-text"
         >
           Cancel
         </button>
@@ -55,7 +53,6 @@ function ReplyComposer({ author, reply, nested }) {
 export default function CommentThread({
   comment,
   userId,
-  avatar,
   deletingCommentId,
   onReply,
   onDelete,
@@ -68,15 +65,12 @@ export default function CommentThread({
 
   return (
     <div className="space-y-2">
-      <div className={`border border-line transition-colors ${nested ? 'bg-surface-subtle/60 p-3.5 sm:p-4 space-y-2' : 'bg-surface p-4 sm:p-5 space-y-2.5'}`}>
-        <div className="flex items-center justify-between text-xs text-muted">
+      <div className={`space-y-3 ${nested ? 'py-3' : 'border-b border-line/70 py-5'}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
           <div className="flex flex-wrap items-center gap-2">
-            <div className={`shrink-0 flex items-center justify-center border border-line-strong bg-white p-0.5 ${nested ? 'h-5 w-5' : 'h-6 w-6'}`}>
-              <AvatarIcon id={getCommentAvatarId(comment, userId, avatar)} className="h-full w-full object-contain" />
-            </div>
             <strong className="text-sm font-bold text-text">@{comment.author || 'reader'}</strong>
             {nested && (
-              <span className="inline-flex items-center gap-1 border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[0.68rem] font-bold text-accent-blue">
+              <span className="inline-flex items-center gap-1 text-[0.7rem] font-medium text-accent-blue">
                 ↳ in reply to @{comment.replyToAuthor || parentAuthor}
               </span>
             )}
@@ -89,7 +83,7 @@ export default function CommentThread({
             <button
               type="button"
               onClick={() => onReply(comment)}
-              className={`press inline-flex items-center gap-1 bg-surface text-xs font-semibold text-muted hover:border-text hover:text-text ${nested ? 'border border-line px-2 py-0.5' : 'border border-line-strong px-2.5 py-1'}`}
+              className="press inline-flex items-center gap-1 px-2 py-2 text-xs font-medium text-muted hover:text-accent-blue"
               title={`Reply to @${comment.author}`}
             >
               <CornerDownRight size={nested ? 11 : 12} />
@@ -113,19 +107,18 @@ export default function CommentThread({
           {comment.cleanText || comment.body}
         </p>
         {reply.target?.id === comment.id && (
-          <ReplyComposer author={comment.author} reply={reply} nested={nested} />
+          <ReplyComposer author={comment.author} reply={reply} />
         )}
       </div>
       {comment.replies.length > 0 && (
         <div className={depth === 0
-          ? 'ml-4 sm:ml-8 pl-3.5 sm:pl-4 border-l-2 border-line-strong space-y-2 pt-1'
+          ? 'ml-4 sm:ml-8 pl-3.5 sm:pl-4 border-l border-line space-y-2 pt-1'
           : 'space-y-2 pt-1'}>
           {comment.replies.map((child) => (
             <CommentThread
               key={child.id}
               comment={child}
               userId={userId}
-              avatar={avatar}
               deletingCommentId={deletingCommentId}
               onReply={onReply}
               onDelete={onDelete}

@@ -134,7 +134,7 @@ export default function Auth({ mode = 'login' }) {
               <span className="text-muted hidden sm:inline">Already have an account?</span>
               <Link
                 to={`/login${switchQuery}`}
-                className="press border border-line-strong bg-surface px-3 py-1.5 font-bold text-text hover:bg-surface-hover"
+                className="press px-3 py-2 font-bold text-text hover:bg-surface-hover"
               >
                 Sign in
               </Link>
@@ -144,7 +144,7 @@ export default function Auth({ mode = 'login' }) {
               <span className="text-muted hidden sm:inline">New here?</span>
               <Link
                 to={`/signup${switchQuery}`}
-                className="press border border-accent-red bg-accent-red px-3.5 py-1.5 font-bold text-white hover:bg-accent-red-hover"
+                className="press bg-accent-red px-3.5 py-2 font-bold text-white hover:bg-accent-red-hover"
               >
                 Sign up
               </Link>
@@ -159,18 +159,18 @@ export default function Auth({ mode = 'login' }) {
         <div className="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 lg:px-20 py-12 bg-surface">
           <div className="w-full max-w-sm space-y-6">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-text">
+              <h1 className="text-3xl font-semibold tracking-tight text-text">
                 {isSignup ? 'Create an account' : 'Welcome back'}
               </h1>
               <p className="mt-1.5 text-xs text-muted">
                 {isSignup
-                  ? 'Join thousands of readers sharing candid book discussions.'
-                  : 'Enter your credentials to access your bookshelf discussions.'}
+                  ? 'Join the conversation about your next great read.'
+                  : 'Good books are better with someone to talk to.'}
               </p>
             </div>
 
             {!isSupabaseConfigured && (
-              <div className="border border-line bg-surface-subtle p-3 text-xs text-muted">
+              <div className="bg-surface-subtle p-3 text-xs text-muted">
                 <strong>Offline preview mode:</strong> Supabase credentials are not configured yet.
               </div>
             )}
@@ -178,7 +178,7 @@ export default function Auth({ mode = 'login' }) {
             {errorMessage && (
               <div
                 role="alert"
-                className="flex items-start gap-2 border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800"
+                className="flex items-start gap-2 border-l-2 border-rose-300 bg-rose-50 p-3 text-xs text-rose-800"
               >
                 <AlertCircle size={15} className="mt-0.5 shrink-0 text-accent-red" />
                 <span>{errorMessage}</span>
@@ -186,7 +186,7 @@ export default function Auth({ mode = 'login' }) {
             )}
 
             {infoMessage && (
-              <div role="status" className="border border-line bg-surface-subtle p-3 text-xs text-text">
+              <div role="status" className="bg-surface-subtle p-3 text-xs text-text">
                 {infoMessage}
               </div>
             )}
@@ -194,7 +194,7 @@ export default function Auth({ mode = 'login' }) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignup && (
                 <div>
-                  <label htmlFor="username" className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
+                  <label htmlFor="username" className="block text-xs font-semibold text-text mb-1">
                     Username
                   </label>
                   <div className="flex gap-1.5">
@@ -239,7 +239,7 @@ export default function Auth({ mode = 'login' }) {
               )}
 
               <div>
-                <label htmlFor="identifier" className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
+                <label htmlFor="identifier" className="block text-xs font-semibold text-text mb-1">
                   {isSignup ? 'Email' : 'Email or Username'}
                 </label>
                 <input
@@ -255,7 +255,7 @@ export default function Auth({ mode = 'login' }) {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-xs font-bold uppercase tracking-wider text-text mb-1">
+                <label htmlFor="password" className="block text-xs font-semibold text-text mb-1">
                   Password
                 </label>
                 <input
@@ -274,7 +274,7 @@ export default function Auth({ mode = 'login' }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="press mt-2 inline-flex h-10 w-full items-center justify-center gap-2 border border-accent-red bg-accent-red text-xs font-bold uppercase tracking-wider text-white hover:bg-accent-red-hover disabled:opacity-50"
+                className="press mt-2 inline-flex h-10 w-full items-center justify-center gap-2 bg-accent-red text-xs font-bold uppercase tracking-wider text-white hover:bg-accent-red-hover disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

@@ -140,7 +140,7 @@ export default function Home() {
             value={sortMode}
             onChange={(e) => updateFilters({ sort: e.target.value, page: 1 })}
             aria-label="Sort discussions"
-            className="border border-line-strong bg-surface px-2 py-1 text-xs font-semibold text-text outline-none"
+            className="border-0 bg-transparent px-2 py-2 text-xs font-medium text-text outline-none"
           >
             <option value="newest">Newest first</option>
             <option value="upvotes">Most upvoted</option>
@@ -170,27 +170,27 @@ export default function Home() {
         {isLoading ? (
           <FeedSkeleton count={6} />
         ) : fetchError ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center border border-line bg-surface p-6">
+          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-6">
             <AlertCircle size={32} className="text-accent-red" aria-hidden="true" />
             <p className="text-sm font-semibold text-text">{fetchError}</p>
             <button
               type="button"
               onClick={() => setRetryCount((count) => count + 1)}
-              className="press inline-flex items-center gap-1.5 border border-line-strong bg-surface px-4 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
+              className="press inline-flex items-center gap-1.5 bg-surface-subtle px-4 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
             >
               <RefreshCw size={14} />
               <span>Retry</span>
             </button>
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-16 text-center border border-line bg-surface p-6">
+          <div className="flex flex-col items-center justify-center gap-2 py-16 text-center px-6">
             {isFiltered ? (
               <>
                 <p className="text-base font-semibold text-text">No discussions match your filter.</p>
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="press mt-2 border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-text hover:bg-surface-hover"
+                  className="press mt-2 bg-surface-subtle px-3 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
                 >
                   Clear all filters
                 </button>
@@ -203,7 +203,7 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col space-y-3">
+          <div className="flex flex-col">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} onUpvote={handleUpvote} />
             ))}
@@ -224,7 +224,7 @@ export default function Home() {
               type="button"
               disabled={currentPage <= 1}
               onClick={() => updateFilters({ page: currentPage - 1 })}
-              className="press border border-line-strong bg-surface px-3 py-1.5 font-semibold text-text hover:bg-surface-hover disabled:opacity-40"
+              className="press px-3 py-2 font-semibold text-text hover:bg-surface-hover disabled:opacity-40"
             >
               Previous
             </button>
@@ -232,7 +232,7 @@ export default function Home() {
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => updateFilters({ page: currentPage + 1 })}
-              className="press border border-line-strong bg-surface px-3 py-1.5 font-semibold text-text hover:bg-surface-hover disabled:opacity-40"
+              className="press px-3 py-2 font-semibold text-text hover:bg-surface-hover disabled:opacity-40"
             >
               Next
             </button>

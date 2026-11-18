@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 
-export function DogSvg({ className = 'h-11 w-auto' }) {
+function DogSvg({ className = 'h-11 w-auto' }) {
   return (
     <svg
       viewBox="0 0 234 151"

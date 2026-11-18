@@ -2,12 +2,11 @@ import { useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router'
 import { Plus, Search, LogOut, MessageSquare, Tag, Menu, X } from 'lucide-react'
 import Logo from './Logo.jsx'
-import { AvatarIcon } from './Avatars.jsx'
 import { useAuth } from '../lib/authContext.js'
 import { ALL_CATEGORIES } from '../lib/categories.js'
 
 export default function Layout() {
-  const { username, avatar, isAuthenticated, loading, logout } = useAuth()
+  const { username, isAuthenticated, loading, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -70,13 +69,13 @@ export default function Layout() {
       {/* Responsive Shell: Left Sidebar + Main Content */}
       <div className="flex min-h-screen bg-background">
         {/* Mobile Header Bar (< md screens) */}
-        <div className="flex h-16 w-full items-center justify-between border-b border-line bg-surface px-4 md:hidden fixed top-0 z-40">
+        <div className="flex h-16 w-full items-center justify-between border-b border-line/70 bg-surface px-4 md:hidden fixed top-0 z-40">
           <Logo showText={true} imgClassName="h-10 w-auto" />
           <div className="flex items-center gap-2">
             {!isAuthenticated && !loading && (
               <Link
                 to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
-                className="press border border-line-strong px-2.5 py-1 text-xs font-semibold"
+                className="press px-2.5 py-2 text-xs font-semibold"
               >
                 Log In
               </Link>
@@ -84,7 +83,7 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="press p-1.5 border border-line-strong text-text"
+              className="press p-2 text-text hover:bg-surface-hover"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -98,13 +97,13 @@ export default function Layout() {
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Logo Area — Centered, prominent branding */}
-          <div className="flex h-20 items-center justify-center border-b border-line px-4">
+          {/* Brand */}
+          <div className="flex h-16 items-center justify-center px-4">
             <Logo showText={true} imgClassName="h-12 w-auto" className="w-full justify-center" />
           </div>
 
           {/* Sidebar Action Button */}
-          <div className="p-4 border-b border-line">
+          <div className="px-5 py-5">
             <Link
               to="/create"
               onClick={() => setMobileMenuOpen(false)}
@@ -122,10 +121,10 @@ export default function Layout() {
               <Link
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2 text-sm font-bold border ${
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm font-semibold border-l-2 ${
                   location.pathname === '/' && (!searchParams.get('category') || searchParams.get('category') === 'All') && !currentQuery
-                    ? 'border-text bg-text text-background'
-                    : 'border-transparent text-text hover:border-line hover:bg-surface-subtle'
+                    ? 'border-accent-red bg-surface-subtle text-text'
+                    : 'border-transparent text-text hover:bg-surface-subtle'
                 }`}
               >
                 <MessageSquare size={16} strokeWidth={2.2} />
@@ -148,10 +147,10 @@ export default function Layout() {
                       key={cat}
                       to={cat === 'All' ? '/' : `/?category=${encodeURIComponent(cat)}`}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 text-xs font-semibold border transition-colors ${
+                      className={`flex items-center gap-2.5 px-3 py-2 text-xs font-medium border-l-2 transition-colors ${
                         active
-                          ? 'border-line-strong bg-surface-hover text-text font-bold'
-                          : 'border-transparent text-muted hover:border-line hover:bg-surface-subtle hover:text-text'
+                          ? 'border-accent-red bg-surface-subtle text-text font-semibold'
+                          : 'border-transparent text-muted hover:bg-surface-subtle hover:text-text'
                       }`}
                     >
                       <span className={`h-2.5 w-2.5 shrink-0 ${getTagIndicatorColor(cat)}`} aria-hidden="true" />
@@ -164,20 +163,17 @@ export default function Layout() {
           </nav>
 
           {/* Sidebar Footer: Clean minimal user display */}
-          <div className="border-t border-line p-4 bg-surface-subtle">
+          <div className="border-t border-line/70 px-6 py-5">
             {loading ? (
               <div className="h-8 animate-pulse bg-line" />
             ) : isAuthenticated ? (
               <Link
                 to="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 text-xs group"
+                className="block min-w-0 text-xs group"
                 title="View your profile"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-line-strong bg-white p-1">
-                  <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
-                </div>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0">
                   <span className="text-muted block text-[0.65rem] font-bold uppercase tracking-wider">
                     Signed in as
                   </span>
@@ -193,14 +189,14 @@ export default function Layout() {
                   <Link
                     to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="press flex-1 flex items-center justify-center border border-line-strong bg-surface py-1.5 text-xs font-bold text-text hover:bg-surface-hover"
+                    className="press flex-1 flex items-center justify-center py-2 text-xs font-bold text-text hover:bg-surface-hover"
                   >
                     Log In
                   </Link>
                   <Link
                     to={`/signup?next=${encodeURIComponent(location.pathname + location.search)}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="press flex-1 flex items-center justify-center border border-accent-red bg-accent-red py-1.5 text-xs font-bold text-white hover:bg-accent-red-hover"
+                    className="press flex-1 flex items-center justify-center bg-accent-red py-2 text-xs font-bold text-white hover:bg-accent-red-hover"
                   >
                     Sign Up
                   </Link>
@@ -222,46 +218,44 @@ export default function Layout() {
         {/* RIGHT MAIN AREA */}
         <div className="flex-1 flex flex-col min-w-0 pt-16 md:pt-0">
           {/* Top Header Bar: Search on Left, User Profile / Auth on Top Right */}
-          <header className="h-16 flex items-center border-b border-line bg-surface px-4 sm:px-8">
+          <header className="h-16 flex items-center border-b border-line/70 bg-background px-4 sm:px-8">
             <div className="flex w-full items-center justify-between gap-4">
               {/* Search Bar */}
-              <form onSubmit={handleSearchSubmit} role="search" className="flex-1 max-w-md">
-                <div className="flex items-center border border-line-strong bg-surface px-2.5 py-1.5 text-muted focus-within:border-accent-blue">
+              <form onSubmit={handleSearchSubmit} role="search" className="min-w-0 flex-1 max-w-md">
+                <div className="flex items-center gap-1 rounded-[3px] bg-surface-subtle px-3 py-2.5 text-muted focus-within:ring-1 focus-within:ring-accent-blue">
                   <Search size={14} className="text-muted shrink-0 mr-2" aria-hidden="true" />
-                  <span className="sr-only">Search discussions</span>
+                  <label htmlFor="header-search" className="sr-only">Search discussions</label>
                   <input
+                    id="header-search"
                     type="search"
                     value={headerSearch}
                     onChange={(e) => setHeaderSearch(e.target.value)}
-                    placeholder="Search books, authors, discussions..."
+                    placeholder="Search discussion titles..."
                     maxLength={160}
                     className="w-full min-w-0 border-0 bg-transparent text-xs text-text outline-none placeholder:text-muted/70"
                   />
                 </div>
               </form>
 
-              {/* TOP RIGHT CORNER: Profile handle + avatar linking to /profile, and sign out */}
-              <div className="flex items-center gap-2 text-xs">
+              {/* Account link and sign out */}
+              <div className="flex shrink-0 items-center gap-2 text-xs">
                 {loading ? (
                   <div className="h-7 w-20 animate-pulse bg-surface-subtle" />
                 ) : isAuthenticated ? (
                   <div className="flex items-center gap-2">
                     <Link
                       to="/profile"
-                      className="press flex items-center gap-2 border border-line-strong bg-surface px-2.5 py-1 text-xs font-bold text-text hover:bg-surface-hover"
+                      className="press flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-text hover:bg-surface-hover"
                       title="View profile and settings"
                     >
-                      <div className="h-4.5 w-4.5 shrink-0 flex items-center justify-center">
-                        <AvatarIcon id={avatar?.id} className="h-full w-full object-contain" />
-                      </div>
-                      <span className="font-bold text-text" title={username}>
+                      <span className="max-w-24 truncate font-semibold text-text sm:max-w-none" title={username}>
                         @{username || 'reader'}
                       </span>
                     </Link>
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="press border border-line-strong bg-surface px-2.5 py-1 text-muted hover:text-accent-red hover:border-accent-red"
+                      className="press px-2.5 py-2 text-muted hover:text-accent-red hover:bg-surface-subtle"
                       title="Sign out"
                     >
                       <LogOut size={13} className="sm:mr-1 inline" />
@@ -272,13 +266,13 @@ export default function Layout() {
                   <div className="flex items-center gap-2">
                     <Link
                       to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`}
-                      className="press border border-line-strong bg-surface px-3 py-1 font-semibold text-text hover:bg-surface-hover"
+                      className="press px-3 py-2 font-semibold text-text hover:bg-surface-hover"
                     >
                       Log In
                     </Link>
                     <Link
                       to={`/signup?next=${encodeURIComponent(location.pathname + location.search)}`}
-                      className="press border border-accent-red bg-accent-red px-3 py-1 font-semibold text-white hover:bg-accent-red-hover"
+                      className="press bg-accent-red px-3 py-2 font-semibold text-white hover:bg-accent-red-hover"
                     >
                       Sign Up
                     </Link>
