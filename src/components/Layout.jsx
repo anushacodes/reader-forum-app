@@ -1,4 +1,5 @@
-import { Link, Outlet, useNavigate, useLocation } from 'react-router'
+import { useState } from 'react'
+import { Link, Outlet, useNavigate, useLocation, useSearchParams } from 'react-router'
 import { Moon, Plus, Search, Sun, LogOut } from 'lucide-react'
 import Logo from './Logo.jsx'
 import { useTheme } from '../lib/theme.js'
@@ -9,6 +10,26 @@ export default function Layout() {
   const { user, username, isAuthenticated, loading, logout, isSupabaseConfigured } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  const currentQuery = searchParams.get('q') || ''
+  const [headerSearch, setHeaderSearch] = useState(currentQuery)
+  const [prevQuery, setPrevQuery] = useState(currentQuery)
+
+  if (prevQuery !== currentQuery) {
+    setPrevQuery(currentQuery)
+    setHeaderSearch(currentQuery)
+  }
+
+  const handleHeaderSearchSubmit = (e) => {
+    e.preventDefault()
+    const trimmed = headerSearch.trim()
+    if (trimmed) {
+      navigate(`/?q=${encodeURIComponent(trimmed)}`)
+    } else if (location.pathname === '/' && currentQuery) {
+      navigate('/')
+    }
+  }
 
   const handleLogout = async () => {
     await logout()
@@ -34,16 +55,22 @@ export default function Layout() {
         <header className="flex min-h-[6.5rem] items-center gap-4 border-b border-line md:gap-8">
           <Logo />
 
-          <label className="hidden min-h-12 max-w-[27.5rem] flex-1 items-center gap-3 rounded-ui border border-transparent bg-soft px-4 text-muted focus-within:border-input-border md:flex">
+          <form
+            onSubmit={handleHeaderSearchSubmit}
+            role="search"
+            className="hidden min-h-12 max-w-[27.5rem] flex-1 items-center gap-3 rounded-ui border border-transparent bg-soft px-4 text-muted focus-within:border-input-border md:flex"
+          >
             <Search size={20} strokeWidth={1.5} aria-hidden="true" />
             <span className="sr-only">Search post titles</span>
             <input
               type="search"
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
               placeholder="Search titles"
               maxLength={160}
               className="w-full min-w-0 border-0 bg-transparent py-2.5 text-base text-text outline-none placeholder:text-muted"
             />
-          </label>
+          </form>
 
           <div className="ml-auto flex items-center gap-3 whitespace-nowrap md:gap-6">
             <button
