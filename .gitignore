@@ -1,34 +1,40 @@
-.DS_Store
+# --- Local planning & agent material (never pushed) ---
+plan.md
+project-plan.md
+codepath-reqs.md
+TASKS.md
+demo.html
+demo-ui/
+docs/
+.superpowers/
+.agents/
+.agent/
+.claude/
+.codex/
+.impeccable/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
+
+# --- Dependencies & builds ---
 node_modules/
 dist/
+dist-ssr/
+*.local
+
+# --- Environment (keep .env.example) ---
 .env
 .env.*
 !.env.example
 
-# Logs
-logs
+# --- Logs ---
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# --- Editor / OS ---
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
-
-# Local project planning
-/plan.md
+public/brand/
