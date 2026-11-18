@@ -153,6 +153,21 @@ export function AuthProvider({ children }) {
   }
 
   /**
+   * Update password
+   */
+  const updatePassword = async (newPassword) => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      if (error) throw error
+      return data
+    } else {
+      return { success: true }
+    }
+  }
+
+  /**
    * Sign out
    */
   const logout = async () => {
@@ -178,6 +193,7 @@ export function AuthProvider({ children }) {
       login,
       signup,
       logout,
+      updatePassword,
       refreshProfile: () => (user ? loadProfile(user.id) : Promise.resolve(null)),
     }),
     [session, user, profile, loading]

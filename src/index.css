@@ -1,77 +1,91 @@
 @import 'tailwindcss';
 
-/* Theme tokens — copied from the approved demo (project-plan.md §9). */
+/* Theme tokens — Pure white background, sharp rectilinear web styling. Light mode only. */
 :root {
   color-scheme: light;
-  --background: #fcfbf8;
-  --surface: #fff;
-  --text: #282725;
-  --muted: #68655f;
-  --line: #e4e1da;
-  --input-border: #918b80;
-  --soft: #f0eee8;
-  --cover: #eee7db;
-  --accent: #963f31;
-  --image-outline: oklch(0 0 0 / 0.1);
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-subtle: #f9fafb;
+  --surface-hover: #f3f4f6;
+  --text: #111827;
+  --muted: #4b5563;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
+  --input-border: #9ca3af;
+
+  /* Colors: reds, blues, browns */
+  --accent-red: #dc2626;
+  --accent-red-hover: #b91c1c;
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #1d4ed8;
+  --accent-brown: #78350f;
+  --accent-brown-hover: #92400e;
+
+  --accent: var(--accent-red);
+  --accent-hover: var(--accent-red-hover);
+
+  --image-outline: #e5e7eb;
 }
 
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --background: #1c1c1a;
-  --surface: #242421;
-  --text: #f2f0e9;
-  --muted: #b1aea5;
-  --line: #3b3b36;
-  --input-border: #8a877e;
-  --soft: #30302b;
-  --cover: #2c2c26;
-  --accent: #eaa993;
-  --image-outline: oklch(1 0 0 / 0.1);
-}
-
-/* Expose the tokens as Tailwind utilities: bg-background, text-muted, border-line, … */
+/* Expose tokens as Tailwind utilities — all radii 0px (no rounded corners!) */
 @theme inline {
-  --font-sans: 'Source Sans 3', ui-sans-serif, system-ui, Arial, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-input-border: var(--input-border);
-  --color-soft: var(--soft);
-  --color-cover: var(--cover);
   --color-accent: var(--accent);
-  --radius-ui: 0.5rem;
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-red: var(--accent-red);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-brown: var(--accent-brown);
+
+  --radius-ui: 0px;
+  --radius-card: 0px;
+  --radius-outer: 0px;
 }
 
 @layer base {
+  * {
+    border-radius: 0 !important;
+  }
+
   body {
     background: var(--background);
     color: var(--text);
     font-family: var(--font-sans);
-    font-size: 1.0625rem;
+    font-size: 0.9375rem;
     line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   a {
-    text-underline-offset: 0.2em;
+    text-underline-offset: 2px;
   }
   input,
-  textarea {
+  textarea,
+  select {
     caret-color: var(--accent);
   }
   ::selection {
-    background: var(--text);
-    color: var(--background);
+    background: var(--accent-blue);
+    color: #ffffff;
   }
   :where(button, a, input, select, textarea, summary):focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 1px;
   }
   :where(h1, main):focus {
     outline: none;
   }
   h1,
-  h2 {
+  h2,
+  h3 {
     text-wrap: balance;
   }
   button:not(:disabled) {
@@ -79,17 +93,7 @@
   }
 }
 
-/* Button press feedback (better-ui): only with motion allowed. */
-@media (prefers-reduced-motion: no-preference) {
-  .press {
-    transition: scale 150ms ease-out;
-  }
-  .press:active:not(:disabled) {
-    scale: 0.96;
-  }
-}
-
-/* Suppress transitions while switching theme. */
-.theme-switching * {
-  transition: none !important;
+/* Press feedback: subtle shift */
+.press:not(:disabled):active {
+  transform: translateY(1px);
 }

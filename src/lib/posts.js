@@ -123,7 +123,7 @@ export async function listPosts({
   if (isSupabaseConfigured && supabase) {
     let query = supabase
       .from('posts')
-      .select('id, title, content, category, image_url, upvotes, created_at, author_id, profiles(username)', {
+      .select('id, title, content, category, image_url, upvotes, created_at, author_id, profiles(username), comments(count)', {
         count: 'exact',
       })
 
@@ -155,6 +155,7 @@ export async function listPosts({
     const mappedPosts = (data || []).map((p) => ({
       ...p,
       author: p.profiles?.username || 'Reader',
+      commentsCount: p.comments?.[0]?.count ?? 0,
     }))
 
     return { posts: mappedPosts, totalCount: count ?? 0 }

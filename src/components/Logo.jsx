@@ -1,16 +1,26 @@
 import { Link } from 'react-router'
 
-export default function Logo({ className = '' }) {
+export default function Logo({
+  className = '',
+  showText = false,
+  imgClassName = 'h-16 w-auto',
+}) {
   return (
     <Link
       to="/"
       aria-label="Dogear home"
-      className={`inline-flex flex-none items-center gap-2.5 text-[2.125rem] leading-none font-semibold tracking-[-0.015em] no-underline ${className}`}
+      className={`inline-flex items-center gap-3 no-underline ${className}`}
     >
-      <img src="/logo.png" alt="" width="50" height="38" className="h-[2.375rem] w-[3.125rem] object-cover" />
-      <span aria-hidden="true">
-        dogear<span className="text-accent">.</span>
-      </span>
+      <img
+        src="/logo.png"
+        alt="Dogear"
+        className={`object-contain shrink-0 ${imgClassName}`}
+      />
+      {showText && (
+        <span aria-hidden="true" className="text-xl font-bold tracking-tight text-text">
+          dogear<span className="text-accent-red font-bold">.</span>
+        </span>
+      )}
     </Link>
   )
 }
