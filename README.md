@@ -26,7 +26,9 @@ Search, category, sort, and page selections stay in the URL, so you can share a 
 
 ## Walkthrough
 
-A walkthrough recording is pending.
+<p align="center">
+  <img src="walkthrough.gif" alt="Dogear App Walkthrough" width="100%" />
+</p>
 
 ## Tech stack
 
